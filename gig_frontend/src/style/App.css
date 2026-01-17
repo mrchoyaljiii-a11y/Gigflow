@@ -1,0 +1,22 @@
+.toast {
+  position: fixed;
+  top: 1rem;
+  right: 30rem;
+  z-index: 99;
+}
+
+.toast {
+  animation: slideIn 0.4s ease-out forwards;
+}
+
+@keyframes slideIn {
+  0% {
+    transform: translateX(100px);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(-80%);
+    opacity: 1;
+  }
+}

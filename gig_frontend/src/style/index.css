@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+/* Add your custom styles below */
+body{
+      background: #f6f6f8;
+}
+
+@theme{
+      --color-primary: #2b6cee;
+      --color-bg-light:#f6f6f8;
+      --color-bg-dark:#101622;
+}
