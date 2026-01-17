@@ -5,7 +5,7 @@ import axios from "axios";
 //user registration
 export const registerUser = createAsyncThunk('auth/registerUser', async (userData, { rejectWithValue }) => {
     try {
-        const res = await api.post('http://localhost:3000/api/auth/register', userData, { withCredentials: true });
+        const res = await api.post('/api/auth/register', userData, { withCredentials: true });
         return res.data; //backend response
 
     }
@@ -18,7 +18,7 @@ export const registerUser = createAsyncThunk('auth/registerUser', async (userDat
 //user login
 export const loginUser = createAsyncThunk('auth/loginUser', async (credentials, { rejectWithValue }) => {
     try {
-        const res = await api.post('http://localhost:3000/api/auth/login', credentials, { withCredentials: true });
+        const res = await api.post('/api/auth/login', credentials, { withCredentials: true });
         // console.log("Login response data:", res.data);
         return res.data; //backend response
     }
@@ -31,7 +31,7 @@ export const loginUser = createAsyncThunk('auth/loginUser', async (credentials, 
 // check if user is logged in
 export const checkLogin = createAsyncThunk('auth/checkLogin', async (_, { rejectWithValue }) => {
     try {
-        const res = await api.get('http://localhost:3000/api/auth/check', { withCredentials: true });
+        const res = await api.get('/api/auth/check', { withCredentials: true });
         return res.data;
     } catch (error) {
         return rejectWithValue(error.response?.data?.message || "Not logged in");
@@ -41,7 +41,7 @@ export const checkLogin = createAsyncThunk('auth/checkLogin', async (_, { reject
 //logout user
 export const LogoutUser = createAsyncThunk('auth/logoutUser', async (_, { rejectWithValue }) => {
     try {
-        const res = await api.get('http://localhost:3000/api/auth/logout', { withCredentials: true });
+        const res = await api.get('/api/auth/logout', { withCredentials: true });
         return res.data;
     }
     catch (error) {

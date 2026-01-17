@@ -24,6 +24,11 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+app.get("/", (req, res) => {
+  res.send("Backend running successfully 🚀");
+});
+
+
 // job router
 app.use(job_router);
 
