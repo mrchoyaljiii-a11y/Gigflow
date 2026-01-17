@@ -15,7 +15,7 @@ ConnectDB();
 
 app.use(cors({
     origin: ['http://localhost:5173',
-        'https://gigflow-ktgy.vercel.app/'
+        'https://gigflow-ktgy.vercel.app'
     ],
     credentials: true,
 }))
