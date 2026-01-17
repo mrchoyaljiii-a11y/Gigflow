@@ -114,4 +114,3 @@ JWT_SECRET=supersecretkey
 * Make sure MongoDB is running before starting the backend
 * Run frontend and backend in separate terminals
 
----
