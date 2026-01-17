@@ -13,12 +13,17 @@ const PORT = process.env.PORT || 3000;
 
 ConnectDB();
 
+// app.use(cors({
+//     origin: ['http://localhost:5173',
+//         'https://gigflow-ktgy.vercel.app'
+//     ],
+//     credentials: true,
+// }))
+
 app.use(cors({
-    origin: ['http://localhost:5173',
-        'https://gigflow-ktgy.vercel.app'
-    ],
-    credentials: true,
-}))
+  origin: "https://gigflow-ktgy.vercel.app",
+  credentials: true
+}));
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
