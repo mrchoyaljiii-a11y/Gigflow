@@ -1,4 +1,5 @@
 import {createSlice,createAsyncThunk} from '@reduxjs/toolkit';
+import api from '../../api/axios'
 import axios from 'axios';
 
 
@@ -6,7 +7,7 @@ import axios from 'axios';
 export const Addjob = createAsyncThunk('job/Addjob', async (jobData, {rejectWithValue}) => {
 
     try {
-        const res = await axios.post("http://localhost:3000/api/gigs", jobData,{withCredentials:true});
+        const res = await api.post("http://localhost:3000/api/gigs", jobData,{withCredentials:true});
 
         return res.data; //backend response
 
@@ -22,7 +23,7 @@ export const Addjob = createAsyncThunk('job/Addjob', async (jobData, {rejectWith
 // get the job 
 export const Getjob = createAsyncThunk('job/Getjob', async (_, {rejectWithValue}) => {
     try {
-        const res = await axios.get("http://localhost:3000/api/get/gigs",{withCredentials:true});
+        const res = await api.get("http://localhost:3000/api/get/gigs",{withCredentials:true});
         // console.log("Getjob response:", res.data);
         return res.data; //backend response
     } 

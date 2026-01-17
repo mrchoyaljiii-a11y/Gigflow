@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import api from '../../api/axios'
 import axios from 'axios';
 
 //submit the bid
 export const AddBid = createAsyncThunk('Bid/AddBid', async (BidData, { rejectWithValue }) => {
 
     try {
-        const res = await axios.post("http://localhost:3000/api/bids", BidData, { withCredentials: true });
+        const res = await api.post("http://localhost:3000/api/bids", BidData, { withCredentials: true });
 
         return res.data; //backend response
 
@@ -21,7 +22,7 @@ export const AddBid = createAsyncThunk('Bid/AddBid', async (BidData, { rejectWit
 // get the bid by GigId
 export const GetBid = createAsyncThunk('Bid/GetBid', async (GigId, { rejectWithValue }) => {
     try {
-        const res = await axios.get(`http://localhost:3000/api/bid/${GigId}`, { withCredentials: true });
+        const res = await api.get(`http://localhost:3000/api/bid/${GigId}`, { withCredentials: true });
         // console.log("GetBid response:", res.data);
         return res.data; //backend response
     }
@@ -36,7 +37,7 @@ export const GetBid = createAsyncThunk('Bid/GetBid', async (GigId, { rejectWithV
 // get the all bids
 export const GetAllBids = createAsyncThunk('Bid/GetAllBids', async (_, { rejectWithValue }) => {
     try {
-        const res = await axios.get("http://localhost:3000/api/bids", { withCredentials: true });
+        const res = await api.get("http://localhost:3000/api/bids", { withCredentials: true });
         // console.log("GetAllBids response:", res.data);
         return res.data; //backend response
     }
