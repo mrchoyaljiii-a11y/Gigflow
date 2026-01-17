@@ -39,6 +39,7 @@ async function Handle_Getjob(req,res){
 try {
     const jobs = await jobModel.find();
     // console.log("Fetched jobs:", jobs);
+    // res.send(jobs);
     return res.json({
         success:true,
         jobs: jobs || [],

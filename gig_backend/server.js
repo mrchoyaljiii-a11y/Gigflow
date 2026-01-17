@@ -13,29 +13,19 @@ const PORT = process.env.PORT || 3000;
 
 ConnectDB();
 
+app.use(cors({
+    origin:'https://gigflow-black-theta.vercel.app',    
+    credentials: true,
+}))
+
 // app.use(cors({
-//     origin: ['http://localhost:5173',
-//         'https://gigflow-ktgy.vercel.app'
-//     ],
+//     origin: 'http://localhost:5173',
 //     credentials: true,
 // }))
-
-app.use(cors({
-  origin: "https://gigflow-ktgy.vercel.app",
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
-}));
-app.options("*", cors());
 
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
-
-app.get("/", (req, res) => {
-  res.send("Backend running successfully 🚀");
-});
-
 
 // job router
 app.use(job_router);
@@ -50,3 +40,6 @@ app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
 
+app.get("/", (req, res) => {
+  res.send("Backend running successfully 🚀");
+});
