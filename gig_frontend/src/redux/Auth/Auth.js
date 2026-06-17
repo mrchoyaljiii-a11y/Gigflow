@@ -20,6 +20,7 @@ export const loginUser = createAsyncThunk('auth/loginUser', async (credentials, 
     try {
         const res = await api.post('/api/auth/login', credentials, { withCredentials: true });
         // console.log("Login response data:", res.data);
+        console.log("Login response data:", res.data);
         return res.data; //backend response
     }
     catch (error) {
@@ -59,6 +60,7 @@ const AuthSlice = createSlice({
         loading: false,
         message: null,
         islogin: false,
+        authChecked: false, // Login status NOT verified yet
     },
     extraReducers: (builder) => {
         //register user
@@ -103,26 +105,29 @@ const AuthSlice = createSlice({
                 state.loading = true;
                 state.error = null;
                 state.message = null;
+                state.authChecked = false;
             })
             .addCase(checkLogin.fulfilled, (state, action) => {
                 state.loading = false;
                 state.islogin = action.payload.success;
                 // console.log("islogin in check login", state.islogin)
                 state.user = action.payload.user || null;
+                state.authChecked = true;
             })
             .addCase(checkLogin.rejected, (state, action) => {
                 state.loading = false;
                 state.islogin = false;
                 state.user = null;
                 state.error = action.payload || "Not logged in";
+                state.authChecked = true;
             });
 
-            //Logout user 
-            builder
+        //Logout user 
+        builder
             .addCase(LogoutUser.pending, (state) => {
                 state.loading = true;
                 state.error = null;
-                state.message = null; 
+                state.message = null;
             })
             .addCase(LogoutUser.fulfilled, (state, action) => {
                 state.loading = false;

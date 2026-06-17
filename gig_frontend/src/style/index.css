@@ -7,6 +7,15 @@ body{
 
 @theme{
       --color-primary: #2b6cee;
+      --color-secondary:#135bec;
       --color-bg-light:#f6f6f8;
       --color-bg-dark:#101622;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

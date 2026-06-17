@@ -3,20 +3,27 @@ const Schema = mongoose.Schema;
 
 // actual job schema
 const JobModelSchema = new Schema({
-    Freelancer_type:{type:String,required:true},
-    projectTitle:{type:String,required:true},
-    clientName:{type:String,required:true},
-    category:{type:String,required:true,lowercase:true},
-    Timeline:{type:String,required:true},
-    description:{type:String,required:true},
-    minBudget:{type:Number,required:true},
-    maxBudget:{type:Number,required:true},
-    tags: [String],
-    status:{type:String,required:true},
+    jobtitle: { type: String, required: true },
+    projectCategory: { type: String, required: true },
+    experiance: { type: String, required: true, lowercase: true },
+    timeline: { type: String, required: true },
+    jobDescription: { type: String, required: true },
+    Budget: { type: Number, required: true },
+    BudgetType: { type: String, required: true },
+    skills: [String],
+    status: { type: String, required: true },
+    job_attachment: {
+        type: String,
+    },
+    clientId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true
+    }
 },
-{
-    timestamps: true
-}
+    {
+        timestamps: true
+    }
 );
 
 module.exports = mongoose.model('Job', JobModelSchema);

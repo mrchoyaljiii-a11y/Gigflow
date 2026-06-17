@@ -15,8 +15,10 @@ const SignUp = () => {
     const navigate = useNavigate();
 
     const onSubmit = async (data) => {
+        
         setServerError(null);
         try {
+            console.log("Signup data", data);
             dispatch(registerUser(data))
             // navigate('/login');
         }
@@ -37,7 +39,7 @@ const SignUp = () => {
             )}
 
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
-
+                {/* // First Name */}
                 <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">First name</label>
                     <input
@@ -50,7 +52,7 @@ const SignUp = () => {
                     />
                     {errors.firstName && <p className="text-sm text-red-600 mt-1">{errors.firstName.message}</p>}
                 </div>
-
+                {/* // Last Name */}
                 <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Last name</label>
                     <input
@@ -64,6 +66,8 @@ const SignUp = () => {
                     {errors.lastName && <p className="text-sm text-red-600 mt-1">{errors.lastName.message}</p>}
                 </div>
 
+
+                {/* // Email */}
                 <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Email</label>
                     <input
@@ -76,7 +80,7 @@ const SignUp = () => {
                     />
                     {errors.email && <p className="text-sm text-red-600 mt-1">{errors.email.message}</p>}
                 </div>
-
+                {/* // Password */}
                 <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Password</label>
                     <input
@@ -89,7 +93,7 @@ const SignUp = () => {
                     />
                     {errors.password && <p className="text-sm text-red-600 mt-1">{errors.password.message}</p>}
                 </div>
-
+                {/* // Confirm Password */}
                 <div className="mb-4">
                     <label className="block text-sm font-medium mb-1">Confirm Password</label>
                     <input
@@ -102,6 +106,8 @@ const SignUp = () => {
                     />
                     {errors.confirmPassword && <p className="text-sm text-red-600 mt-1">{errors.confirmPassword.message}</p>}
                 </div>
+
+            
 
                 <button
                     type="submit"

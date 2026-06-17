@@ -1,12 +1,31 @@
+// in these user data is handle when user create account and login and logout and check login
+
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const userModel = require('../model/UserModel/User_model');
+const cloudinary = require('../connections/cloudinary');
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// these function are handle user info when user create account 
 async function Handle_UserSignup(req, res) {
     try {
-        const userData = req.body;
-        const { firstName, lastName, email, password } = userData;
+        const { profileImage, ...userData } = req.body;
+        const { email, password } = userData;
+
+        // console.log("User signup data:", userData);
+        // console.log("Profile Image data:", profileImage);
+
+        let uploadedImg = null;
+
+        if (profileImage) {
+            uploadedImg = await cloudinary.uploader.upload(profileImage, {
+                folder: "profile_images",
+                resource_type: "image"
+            });
+        }
+
+        // console.log("Uploaded Image Info:", uploadedImg);
+
         const existingUser = await userModel.findOne({ email: email });
         if (existingUser) {
             return res.status(400).json({
@@ -14,12 +33,17 @@ async function Handle_UserSignup(req, res) {
                 message: "User already exists with this email"
             });
         }
-        // hash password
+
+        // !hash password
+
         const hashpassword = await bcrypt.hash(password, 10);
+
         const newUser = new userModel({
-            firstName,
-            lastName,
-            email,
+            ...userData,
+            profileImage: {
+                url: uploadedImg?.secure_url,
+                public_id: uploadedImg?.public_id,
+            },
             password: hashpassword
         });
 
@@ -40,6 +64,7 @@ async function Handle_UserSignup(req, res) {
 
 }
 
+// user login
 async function Handle_UserLogin(req, res) {
     try {
         const { email, password } = req.body;
@@ -62,17 +87,21 @@ async function Handle_UserLogin(req, res) {
 
         res.cookie("user_token", token, {
             httpOnly: true,
-            secure: true,
-            sameSite: 'None',
+            secure: false, // Set to true in production with HTTPS
+            sameSite: 'lax',// Set to 'None' or 'lax' based on your requirements
             maxAge: 24 * 60 * 60 * 1000, //1 day
         });
 
         return res.status(200).json({
             success: true,
-            user: userByemail,
+            user: {
+                _id: userByemail._id,
+                firstName: userByemail.firstName,
+                lastName: userByemail.lastName,
+                email: userByemail.email
+            },
             message: "User logged in successfully"
         });
-
 
     }
     catch (error) {
@@ -126,4 +155,5 @@ async function Handle_UserLogout(req, res) {
 async function Handle_GetUserProfile(req, res) {
 
 }
+
 module.exports = { Handle_UserSignup, Handle_UserLogin, Handle_UserLogout, Handle_CheckLogin, Handle_GetUserProfile }

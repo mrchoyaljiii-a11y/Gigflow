@@ -1,16 +1,17 @@
-# React + Vite
+# client side 
+1. in find freelancer page when we search any freelancer by its first name it work but when we want to search by its full name not work
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+2. refresh is required for fetching the data in deashborad 
 
-Currently, two official plugins are available:
+3. invite to job is pending
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+4. notification is done , client will send notifications to freelancer 
+  1. when hire for bid 
+  2. when reject thir bid
+  3. when visite or see thir profile
+  4. when see thir bid
 
-## React Compiler
+5. when the client hire any freelancer for the job , now these job is assigned and other freelancers not able to make the bid on that => done
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## freelancer side 

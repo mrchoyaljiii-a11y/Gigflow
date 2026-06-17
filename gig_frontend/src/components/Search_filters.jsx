@@ -2,97 +2,108 @@ import React, { useEffect, useState } from 'react'
 import { FaSearch } from "react-icons/fa";
 import { useForm } from "react-hook-form"
 import { useDispatch, useSelector } from 'react-redux'
-import { setSearchGig,setFilterdGig } from '../redux/slices/job_slice.js';
-
+import { setSearchGig, setFilterdGig } from '../redux/slices/job_slice.js';
+import { CiSearch, CiStar } from "react-icons/ci";
+import { Getjob } from '../redux/slices/job_slice.js';
 const Search_filters = () => {
+
+  const [searchText, setsearchText] = useState("");
+  // console.log("searchText", searchText);
+
+  const [appliedSearch, setAppliedSearch] = useState("");
+  console.log("appliedSearch", appliedSearch);
   const [colorindex, setcolorindex] = useState(0);
+
   const [Gigs, setGis] = useState([]);
-  const [filterdGig, setfilterdGig] = useState([]);
+
   const filters = ['All Gigs', 'UI/UX Design', 'Web Development', 'Java Developer', 'Data Science', 'Digital Marketing', 'Video & Animation',];
 
-  const { jobs, loading, error } = useSelector((state) => state.job);
+  const { jobs, loading, error, pageNo } = useSelector((state) => state.job);
+
+  // console.log("pageNo in Search_filters:", pageNo);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    setGis(jobs);
-  }, [jobs]);
+    // setGis(jobs);
+    // dispatch(setFilterdGig(jobs));
+    dispatch(Getjob({ pageNo: pageNo, search: appliedSearch, limit: 6}));
+  }, [dispatch, appliedSearch, pageNo]);
 
-  // console.log("Gigs in Search_filters:", Gigs);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm()
-
-  let filtergig = [];
 
   const onSubmit = (data) => {
+    const searchText = data.search.toLowerCase();
 
-   filtergig = Gigs.filter((gig) => {
-      return gig.projectName.toLowerCase().includes(data.search.toLowerCase()) ||
-        gig.clientName.toLowerCase().includes(data.search.toLowerCase()) ||
-        gig.category.toLowerCase().includes(data.search.toLowerCase())
-    })
+    const filteredGigs = Gigs.filter((gig) =>
+      gig.jobtitle?.toLowerCase().includes(searchText) ||
+      // gig.clientName?.toLowerCase().includes(searchText) ||
+      gig.projectCategory?.toLowerCase().includes(searchText)
+    );
 
-    dispatch(setSearchGig(filtergig));
+    dispatch(setFilterdGig(filteredGigs));
+  };
 
-    console.log("filterd gig",filtergig)
-  }
 
-  function handleFilter(filter,index) {
-     setcolorindex(index);
-     
-     if(filter === 'All Gigs') {
-      dispatch(setFilterdGig(Gigs));
-     } else {
-      //filter based on category
-      const CategoryFilter = Gigs.filter((gig) => gig.category.toLowerCase() === filter.toLowerCase());
-      console.log("CategoryFilter",CategoryFilter);
-      dispatch(setFilterdGig(CategoryFilter));
-     }
-    
+  function handleFilter(filter, index) {
+    setcolorindex(index);
+
+    if (filter === 'All Gigs') {
+      setAppliedSearch("");
+    } else {
+      setAppliedSearch(filter);
+    }
+
   }
   return (
     <div>
-          {/* Search bar*/}
+      {/* Search bar*/}
       <div className="search relative">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400"><FaSearch /></span>
 
-                    {/* Search input */}
-        <form onSubmit={handleSubmit(onSubmit)} className="w-full">
-          <input
-            type="text"
-            placeholder="Search gigs, skills, or clients..."
-            className={`w-full pl-10 pr-4 py-2.5 bg-white border rounded-xl outline-none text-sm transition-all
-      ${errors.search
-                ? "border-red-500 focus:ring-2 focus:ring-red-400"
-                : "border-slate-200 focus:ring-2 focus:ring-primary"}
-    `}
-            {...register("search", { required: "This field is required" })}
-          />
+        {/* Search input */}
+        <div className="flex flex-col gap-6 mb-8">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="relative flex-1 w-full">
+              <input className="w-full h-14 pl-14 pr-4 bg-white border-none rounded-xl text-base shadow-sm placeholder:text-gray-400 focus:ring-2 focus:ring-primary focus:outline-none"
+                type="text"
+                value={searchText}
+                onChange={(e) => setsearchText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    setAppliedSearch(searchText);
+                  }
+                }}
+                placeholder="Search by Name, Skill's, or keywords..."
+              />
+              <span className="material-symbols-outlined absolute left-5 top-1/2 -translate-y-1/2 text-gray-500">{<CiSearch size={20} />}</span>
+            </div>
+            <button
+              className="w-full md:w-auto px-8 h-14 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+              onClick={() => {
+                setAppliedSearch(searchText);
+              }}
+            >
+              Search Jobs's
+            </button>
 
-          {errors.search && (
-            <p className="text-red-500 text-xs mt-1">
-              {errors.search.message}
-            </p>
-          )}
-        </form>
+          </div>
+
+        </div>
 
       </div>
 
-             {/* filters */}
+      {/* filters */}
       <div className="filters">
         <ul className="flex gap-4 mt-4 overflow-x-auto">
           {filters.map((filter, index) => (
             <li key={index} className={`whitespace-nowrap px-4 py-2 ${index === colorindex ? "bg-primary text-white hover:bg-primary" : "bg-white"} rounded-full text-sm cursor-pointer hover:bg-gray-300 transition-colors`}
-              onClick={() => handleFilter(filter,index)}
+              onClick={() => handleFilter(filter, index)}
             >{filter}</li>
           ))}
 
         </ul>
       </div>
+
+
     </div>
   )
 }
