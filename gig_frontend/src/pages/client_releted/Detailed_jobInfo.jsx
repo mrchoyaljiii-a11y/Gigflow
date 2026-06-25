@@ -22,7 +22,7 @@ const Detailed_jobInfo = () => {
         return <div>Job not found</div>;
     }
 
-    const { jobtitle, projectCategory, timeline, _id, jobDescription, minBudget, maxBudget, skills, clientId,createdAt ,status} = job;
+    const { jobtitle, projectCategory, timeline, _id, jobDescription, minBudget, maxBudget, skills, clientId, createdAt, status, contractId } = job;
 
     return (
         <div key={_id}>
@@ -60,7 +60,16 @@ const Detailed_jobInfo = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button className={`px-6 py-3 rounded-xl font-bold text-red-600 border border-error/20 bg-error-container/10 hover:bg-red-500/10 active:bg-error-container/20 transition-all ${status === "withdraw" ? "hidden" : ""} cursor-pointer`}>
+
+                    {
+                        status === "assigned" && contractId ? (
+                            <NavLink to={`/contracts/${contractId}`}>
+                                <button className="text-primary border border-primary text-sm font-bold hover:bg-primary/10 transition-all px-6 py-3 rounded-xl cursor-pointer">View Contract</button>
+                            </NavLink>
+                        ) : ""
+
+                    }
+                    <button className={`px-6 py-3 rounded-xl font-bold text-red-600 border text-sm hover:bg-red-500/10 transition-all ${status === "withdraw" ? "hidden" : ""} cursor-pointer`}>
                         Demo btn now
                     </button>
                 </div>
@@ -70,7 +79,7 @@ const Detailed_jobInfo = () => {
             {/* Asymmetric Bento-style Layout  */}
 
             <div className="">
-              
+
                 <div className="lg:col-span-8 space-y-8">
                     {/* Detailed Description Card  */}
                     <section className="bg-gray-200/60 p-8 rounded-xl">

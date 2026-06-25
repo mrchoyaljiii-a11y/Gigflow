@@ -135,7 +135,7 @@ const BidSlice = createSlice({
                 state.BidsByFreelancer[index] = updatedBid;
             }
         },
-        // for real-time bid status update in freelancer dashboard when client change the bid status ex: accept or reject
+        // for real-time bid status update in freelancer dashboard  and my proposals when client change the bid status ex: accept or reject
         updateBidStatusLive: (state, action) => {
             const { bidId, status } = action.payload;
 

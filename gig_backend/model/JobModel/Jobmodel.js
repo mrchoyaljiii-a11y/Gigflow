@@ -9,6 +9,8 @@ const JobModelSchema = new Schema({
     timeline: { type: String, required: true },
     jobDescription: { type: String, required: true },
     Budget: { type: Number, required: true },
+    // minBudget:{ type: Number, required: true },
+    // maxBudget:{ type: Number, required: true },
     BudgetType: { type: String, required: true },
     skills: [String],
     status: { type: String, required: true },
@@ -19,7 +21,12 @@ const JobModelSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
-    }
+    },
+    contractId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Contract",
+       
+    },
 },
     {
         timestamps: true

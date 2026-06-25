@@ -64,6 +64,12 @@ import Dashboard_section from "./pages/Navigation/Freelancers-Navigations/Freela
 //contract pages
 import ClientContractPage from './pages/ContractPages/ClientContractPage.jsx'
 
+
+//apis
+import { useGetClientInfo } from './hooks/Client_releted/useGetClientInfo.js'
+import Client_profile_layout from "./pages/Navigation/Clients-Navigations/client-profile/Client_profile_layout.jsx";
+import Client_profile from "./pages/Navigation/Clients-Navigations/client-profile/Client_profile.jsx";
+
 const router = createBrowserRouter([
   /*  PUBLIC LANDING PAGE */
   {
@@ -103,6 +109,26 @@ const router = createBrowserRouter([
           }
         ]
       }
+    ]
+  },
+
+
+  // client profile + header with no footer
+  {
+    path: '/client_profile',
+    element: (<Second_Layout />
+    ),
+    children: [
+      {
+        path: '',
+        element: (<Client_profile_layout />),
+        children: [
+          {
+            index: true,
+            element: (<Client_profile/>)
+          },
+        ]
+      },
     ]
   },
 
@@ -190,8 +216,8 @@ const router = createBrowserRouter([
   },
   // demo contract pages links
   {
-    path:'/contract/:freelancerId',
-    element:<ClientContractPage/>
+    path: '/contracts/:contractId',
+    element: <ClientContractPage />
   }
 
 ]);
@@ -200,6 +226,7 @@ const router = createBrowserRouter([
 function App() {
 
   const dispatch = useDispatch();
+
 
 
   useEffect(() => {

@@ -15,8 +15,7 @@ const fetchUser = createAsyncThunk(
             return rejectWithValue(error.response.data);
         }
     });
-
-
+    
 // fetch freelancers data in freelancer_page.jsx
 
 const fetchFreelancer = createAsyncThunk(

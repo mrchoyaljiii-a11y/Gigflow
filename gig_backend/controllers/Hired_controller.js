@@ -1,7 +1,8 @@
 const Hired = require('../model/freelancer/Hired');
-const { getIO, getUsers } = require("../Socket/socket");
 const bids = require('../model/GigModel/GigModel');
 const Notification = require("../model/notification/notification");
+const { getIO, getUsers } = require("../Socket/socket");
+const contractModel = require('../model/Contract/contract');
 
 // add hire a freelancer for a job | when a client hire the freelancer the data is saved in database.
 async function Handle_SubmitHired(req, res) {
@@ -13,8 +14,11 @@ async function Handle_SubmitHired(req, res) {
             clientCompanyName,
             agreedPrice,
             timeline,
-            gigName
+            gigName,
+            contractType
         } = req.body;
+
+        // console.log("contract type:", contractType.split(" ")[0]);
 
         if (!jobId || !bidId || !freelancerId) {
             return res.status(400).json({
@@ -110,6 +114,7 @@ async function Handle_SubmitHired(req, res) {
 
             console.log("📡 Rejected notification sent:", rejectedUsedId);
         }
+
 
         return res.status(201).json({
             success: true,

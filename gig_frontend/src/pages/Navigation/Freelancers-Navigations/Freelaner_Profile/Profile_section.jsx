@@ -1622,6 +1622,7 @@ const Profile_section = () => {
                     openExtraInfoModel ? (<AddExtra_info actionType={actionType} setOpenExtraInfoModel={setOpenExtraInfoModel} />) : (
 
                         <div className="profile_section_main">
+                          
                             {/* Hero Section */}
                             <div
                                 className="hero_section bg-cover bg-center relative overflow-hidden"

@@ -105,8 +105,8 @@ const Detailed_gig = () => {
                     _id,
                     clientId,
                     jobtitle,
-                    maxBudget,
-                    minBudget,
+                    Budget,
+                    BudgetType,
                     projectCategory,
                     skills,
                     jobDescription,
@@ -157,7 +157,7 @@ const Detailed_gig = () => {
                                     iconBg="bg-green-100"
                                     iconColor="text-green-600"
                                     label="Budget Range"
-                                    value={`$${minBudget.toLocaleString()} – $${maxBudget.toLocaleString()}`}
+                                    value={`$${Budget} ${BudgetType}`}
                                 />
                                 <StatCard
                                     icon={FaClock}
@@ -275,7 +275,7 @@ const Detailed_gig = () => {
                             </Section>
                         </div>
 
-                      
+
                         {/* ══════════ RIGHT SIDEBAR — BID FORM ══════════ */}
                         <div className="sticky top-24 h-fit">
                             <div className="relative bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-[0_12px_40px_rgba(79,107,255,0.13)] hover:border-blue-300 transition-all duration-300">

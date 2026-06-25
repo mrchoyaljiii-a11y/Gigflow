@@ -93,7 +93,8 @@ const MyGigs = () => {
               skills,
               timeline,
               createdAt,
-              status
+              status,
+              contractId
             } = job;
 
             return (
@@ -109,24 +110,37 @@ const MyGigs = () => {
                     </p>
 
                     <NavLink to={`/home/detailed_job_info/${_id}`}>
-                    <h2 className="text-lg font-semibold text-slate-800 cursor-pointer hover:text-primary transition">
-                      {jobtitle}
-                    </h2>
+                      <h2 className="text-lg font-semibold text-slate-800 cursor-pointer hover:text-primary transition">
+                        {jobtitle}
+                      </h2>
                     </NavLink>
 
                   </div>
 
+                  {/* left side in header */}
+                <div className="flex justify-between gap-3 items-center">
+                    {/* view Contract */}
+                  {
+                    status === "assigned" && contractId ? (
+                        <NavLink to={`/contracts/${contractId}`}>
+                          <button className="text-primary border border-primary text-sm font-bold hover:bg-primary/10 transition-all px-3 py-1.5 rounded-2xl cursor-pointer">View Contract</button>
+                        </NavLink>
+                    ) : ""
+
+                  }
+
                   {/* close the job btn */}
                   <button
-                    className="absolute top-5 right-28 border-2 border-red-600  rounded-xl p-0.5 text-white bg-red-500 text-sm font-medium hover:bg-white hover:text-red-500 transition-all cursor-pointer"
+                    className="text-red-500 border border-red-400 text-sm font-bold hover:bg-red-500/10 transition-all px-3 py-1.5 rounded-2xl cursor-pointer capitalize"
                     onClick={() => handleCloseJob(_id)}
                   >
                     close the job
                   </button>
 
-                  <span className={`text-xs bg-green-100 text-green-700 px-3 py-1 rounded-full ${status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"} ${status === "assigned" ? "bg-yellow-100 text-yellow-700" : ""}`}>
+                  <span className={`text-sm px-3 py-1.5 rounded-full ${status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"} ${status === "assigned" ? "bg-yellow-100 text-yellow-700" : ""}`}>
                     {status.charAt(0).toUpperCase() + status.slice(1)}
                   </span>
+                </div>
 
                 </div>
 

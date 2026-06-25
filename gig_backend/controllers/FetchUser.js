@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const userModel = require('../model/UserModel/User_model');
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// fetch user details
+// fetch login user details
 async function Fetch_UserDetails(req, res) {
     try {
         const userToken = req.cookies.user_token;

@@ -193,7 +193,9 @@ const ClientDashboard = () => {
                   <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c669a] ">Date Posted</th>
                   <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c669a] ">Status</th>
                   <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c669a] ">Proposals</th>
-                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c669a]  text-right">Actions</th>
+                  <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-[#4c669a] text-center">
+                    Actions
+                  </th>
                 </tr>
 
               </thead>
@@ -201,7 +203,8 @@ const ClientDashboard = () => {
               <tbody className="divide-y divide-[#cfd7e7]">
                 {
                   Clientjobs.length > 0 && Clientjobs.slice(0, 5).map((job) => {
-                    const { _id, jobtitle, createdAt, status } = job;
+                    const { _id, jobtitle, createdAt, status,contractId } = job;
+                    console.log("contractId", contractId);
 
                     let JobPostDate = createdAt.split("T")[0]
                     return (
@@ -218,7 +221,7 @@ const ClientDashboard = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className={`text-sm font-bold text-[#0d121b] ${status === "active" ? "text-green-600" : "text-red-600"}`}>
+                          <div className={`text-sm font-bold text-[#0d121b] ${status === "active" ? "text-green-600" : "text-red-600"} capitalize`}>
                             {status}
                           </div>
                         </td>
@@ -228,14 +231,28 @@ const ClientDashboard = () => {
                             {getBidCountByGig(_id)} <span>Bids</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right">
+
+                        {/* View Bids , view contract action */}
+                        <td className="px-3 py-4 whitespace-nowrap flex gap-2">
+
                           <div className="text-sm font-bold text-[#0d121b]">
                             <NavLink to={`/home/bids/${_id}`}>
                               <button className="text-white bg-secondary text-sm font-bold hover:bg-primary/90 transition-all px-4 h-9 rounded-2xl">View Bids</button>
                             </NavLink>
                           </div>
-                        </td>
 
+                         {
+                          status === "assigned" && contractId ? (
+                            <div className="text-sm font-bold text-[#0d121b]">
+                            <NavLink to={`/contracts/${contractId}`}>
+                              <button className="text-white bg-secondary text-sm font-bold hover:bg-primary/90 transition-all px-4 h-9 rounded-2xl">View Contract</button>
+                            </NavLink>
+                          </div>
+                          ) : ""
+                        
+                          }
+
+                        </td>
 
                       </tr>
                     )

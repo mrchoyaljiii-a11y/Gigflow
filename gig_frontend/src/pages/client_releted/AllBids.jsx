@@ -10,7 +10,7 @@ import { GetHiredJOb } from '../../redux/hired_freelancer/hired_freelancer.js';
 import { UpdateBidStatus, IncrementBidView, GetBidsByFreelancer } from '../../redux/Bid/Bid_slice.js';
 import { HandleView } from "../../redux/Notification_actions/Notifications_actions.js";
 
-
+import { useCreateContract } from '../../hooks/useCreateContract.js';
 
 const ConfirmHire = ({
     setOpenModel,
@@ -19,12 +19,9 @@ const ConfirmHire = ({
     freelancer,
     project
 }) => {
-
-    // console.log("freelancerId", freelancer.freelancerId);
-
-    const nevigate = useNavigate();
     return (
         <>
+            {/* Backdrop — blocked while loading */}
             <div
                 className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
                 onClick={() => !hireLoading && setOpenModel(false)}
@@ -33,15 +30,13 @@ const ConfirmHire = ({
             <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
                 <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
 
+                    {/* Header */}
                     <div className="flex items-center justify-between px-6 py-5 border-b">
-                        <h2 className="text-2xl font-bold">
-                            Confirm Hiring
-                        </h2>
-
+                        <h2 className="text-2xl font-bold">Confirm Hiring</h2>
                         <button
                             disabled={hireLoading}
                             onClick={() => setOpenModel(false)}
-                            className="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center"
+                            className="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center disabled:opacity-40"
                         >
                             <FaTimes />
                         </button>
@@ -49,119 +44,97 @@ const ConfirmHire = ({
 
                     <div className="p-6 space-y-6">
 
+                        {/* Freelancer info */}
                         <div className="flex items-center gap-4 bg-slate-50 rounded-2xl p-4">
-
-                            {
-                                freelancer?.avatar ? (
-                                    <img
-                                        src={freelancer.avatar}
-                                        alt=""
-                                        className="w-16 h-16 rounded-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
-                                        <FaUserTie size={24} />
-                                    </div>
-                                )
-                            }
-
+                            {freelancer?.avatar ? (
+                                <img
+                                    src={freelancer.avatar}
+                                    alt=""
+                                    className="w-16 h-16 rounded-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <FaUserTie size={24} />
+                                </div>
+                            )}
                             <div>
-                                <h3 className="font-semibold text-lg">
-                                    {freelancer?.name}
-                                </h3>
-
-                                <p className="text-slate-500">
-                                    You are about to hire this freelancer.
-                                </p>
+                                <h3 className="font-semibold text-lg">{freelancer?.name}</h3>
+                                <p className="text-slate-500">You are about to hire this freelancer.</p>
                             </div>
                         </div>
 
+                        {/* Contract details */}
                         <div className="border rounded-2xl overflow-hidden">
-
                             <div className="bg-slate-50 px-5 py-3 border-b">
-                                <h3 className="font-semibold">
-                                    Contract Details
-                                </h3>
+                                <h3 className="font-semibold">Contract Details</h3>
                             </div>
-
                             <div className="p-5 grid md:grid-cols-2 gap-5">
-
                                 <div>
-                                    <p className="text-sm text-slate-500">
-                                        Project
-                                    </p>
-
-                                    <p className="font-medium">
-                                        {project?.jobtitle}
-                                    </p>
+                                    <p className="text-sm text-slate-500">Project</p>
+                                    <p className="font-medium">{project?.jobtitle}</p>
                                 </div>
-
                                 <div>
-                                    <p className="text-sm text-slate-500">
-                                        Budget
-                                    </p>
-
-                                    <p className="font-medium">
-                                        {/* ${project?.budget} */}
-                                        isko update kar hai
-                                    </p>
+                                    <p className="text-sm text-slate-500">Agreed Price</p>
+                                    <p className="font-semibold text-green-600">${project?.agreedPrice}</p>
                                 </div>
-
                                 <div>
-                                    <p className="text-sm text-slate-500">
-                                        Agreed Price
-                                    </p>
-
-                                    <p className="font-semibold text-green-600">
-                                        ${project?.agreedPrice}
-                                    </p>
+                                    <p className="text-sm text-slate-500">Timeline</p>
+                                    <p className="font-medium">{project?.timeline || "Not specified"}</p>
                                 </div>
-
                                 <div>
-                                    <p className="text-sm text-slate-500">
-                                        Timeline
-                                    </p>
-
-                                    <p className="font-medium">
-                                        {project?.timeline || "Not specified"}
-                                    </p>
+                                    <p className="text-sm text-slate-500">Contract Type</p>
+                                    <p className="font-medium">{project?.contractType || "Fixed"}</p>
                                 </div>
                             </div>
                         </div>
 
+                        {/* Warning */}
                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
                             <p className="text-sm text-amber-800">
                                 Hiring this freelancer will create a contract
                                 and lock this project to the selected freelancer.
                             </p>
                         </div>
+
+                        {/* ✅ Loading state — only visible while contract is creating */}
+                        {hireLoading && (
+                            <div className="flex items-center gap-3 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin flex-shrink-0" />
+                                <div>
+                                    <p className="text-sm font-medium text-blue-800">
+                                        Creating your contract...
+                                    </p>
+                                    <p className="text-xs text-blue-600 mt-0.5">
+                                        Please don't close this window
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
+                    {/* Footer */}
                     <div className="flex justify-end gap-3 px-6 py-5 border-t bg-slate-50">
-
                         <button
                             disabled={hireLoading}
                             onClick={() => setOpenModel(false)}
-                            className="px-5 py-2 rounded-xl border"
+                            className="px-5 py-2 rounded-xl border disabled:opacity-40"
                         >
                             Cancel
                         </button>
 
                         <button
-                            onClick={() => {
-                                onHire;
-                                nevigate(`/contract/${freelancer.freelancerId}`);
-                            }}
+                            onClick={onHire}
                             disabled={hireLoading}
-                            className="px-6 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400"
+                            className="px-6 py-2 rounded-xl bg-blue-600 text-white hover:bg-blue-700 disabled:bg-gray-400 flex items-center gap-2"
                         >
-                            {
-                                hireLoading
-                                    ? "Creating Contract..."
-                                    : "Hire Freelancer"
+                            {hireLoading
+                                ? <>
+                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    Creating Contract...
+                                </>
+                                : "Hire Freelancer"
                             }
                         </button>
-
                     </div>
 
                 </div>
@@ -170,20 +143,29 @@ const ConfirmHire = ({
     );
 };
 
-
 const AllBids = () => {
 
     const [openModel, setOpenModel] = useState(false);
 
     const [selectedBid, setSelectedBid] = useState(null);
 
-    const [hireLoading, setHireLoading] = useState(false);
+    // const [hireLoading, setHireLoading] = useState(false);
 
     const [viewedBids, setViewedBids] = useState(new Set());
 
     const dispatch = useDispatch();
 
     const { gig_id } = useParams();
+
+    const nevigate = useNavigate();
+
+
+    //  React Query mutation for contract creation
+    const {
+        mutateAsync: createContract,
+        isPending: contractCreating
+    } = useCreateContract();
+
 
     useEffect(() => {
         dispatch(GetHiredJOb(gig_id));
@@ -210,8 +192,6 @@ const AllBids = () => {
         (job) => job._id === gig_id
     );
 
-
-
     console.log("filtered_job", filtered_job)
 
     const { AllBids, loading, error } = useSelector(
@@ -225,9 +205,10 @@ const AllBids = () => {
     // console.log("Bids_of_gig", Bids_of_gig);
     const Handle_hire = async () => {
 
+
         if (!selectedBid) return;
 
-        setHireLoading(true);
+        // setHireLoading(true);
 
         const { bidItem, index } = selectedBid;
 
@@ -268,12 +249,29 @@ const AllBids = () => {
                     agreedPrice: bidItem.bid,
                     gigName: filtered_job[0]?.jobtitle,
                     hiredStatus: "hired",
+                    contractType: filtered_job[0]?.BudgetType,
                 })
             ).unwrap();
+
+            //create contract for the hired freelancer
+            const result = await createContract({
+                jobId: gig_id,
+                bidId: bidItem._id,
+                freelancerId,
+                clientCompanyName: filtered_job[0]?.clientId?.company,
+                agreedPrice: bidItem.bid,
+                timeline: bidItem.timeline,
+                gigName: filtered_job[0]?.jobtitle,
+                contractType: filtered_job[0]?.BudgetType,
+            });
+
+            console.log("Contract created successfully:", result);
 
             setOpenModel(false);
 
             setSelectedBid(null);
+
+            nevigate(`/contracts/${result.contract._id}`);
 
         } catch (error) {
 
@@ -285,10 +283,6 @@ const AllBids = () => {
                 status: null,
                 freelancerId: null
             });
-
-        } finally {
-
-            setHireLoading(false);
 
         }
     };
@@ -332,7 +326,7 @@ const AllBids = () => {
                     <ConfirmHire
                         setOpenModel={setOpenModel}
                         onHire={Handle_hire}
-                        hireLoading={hireLoading}
+                        hireLoading={contractCreating}
                         freelancer={{
                             name:
                                 `${selectedBid.bidItem.freelancerId.firstName}

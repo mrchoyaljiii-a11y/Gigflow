@@ -30,21 +30,11 @@ const FreelancerCard = ({ freelancerId }) => {
 
   const dispatch = useDispatch();
 
-  // const freelancerData = useSelector(state => state.freelancers[freelancerId]);
+  // if (loading) return <p className="text-center py-20 text-gray-500">Loading...</p>
 
-  // console.log("freelancerData");
+  if (!freelancerId) return <p className="text-center py-20 text-gray-500">No data found.</p>
 
-  useEffect(() => {
-    if (freelancerId) dispatch(fetchSpecificFreelancer(freelancerId))
-  }, [freelancerId, dispatch])
-
-  const { sepecificFreelancerData, loading, error } = useSelector((state) => state.userSlice)
-
-  console.log("sepecificFreelancerData", sepecificFreelancerData);
-
-  if (loading) return <p className="text-center py-20 text-gray-500">Loading...</p>
-
-  if (!sepecificFreelancerData) return <p className="text-center py-20 text-gray-500">No data found.</p>
+  // console.log("freelancerData", freelancerId);
 
   const {
     firstName, lastName, professionalTitle,
@@ -56,7 +46,7 @@ const FreelancerCard = ({ freelancerId }) => {
     rate, hourlyRate,
     workExperience, education,
     professionalCategory, createdAt
-  } = sepecificFreelancerData;
+  } = freelancerId;
 
 
   return (

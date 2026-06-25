@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-// freelancer schema info releted to freelancer for job/gig (Freelancer proposals) for job || its a bid model
+//! its a bid model
 const GigModel = new Schema({
     bid: { type: Number, required: true },
 
@@ -22,7 +22,7 @@ const GigModel = new Schema({
 
     status: {
         type: String,
-        enum: ["pending", "hired", "rejected","withdraw"],
+        enum: ["pending", "hired", "rejected", "withdraw"],
         default: "pending"
     },
 
@@ -33,7 +33,12 @@ const GigModel = new Schema({
             type: Number,
             default: 0
         }
-    }
+    },
+    contractId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Contract",
+        required: true
+    },
 
 }, { timestamps: true });
 module.exports = mongoose.model('Bid', GigModel);

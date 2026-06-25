@@ -10,42 +10,43 @@ import {
   FiArrowRight,
 } from "react-icons/fi";
 
-const stats = [
-  {
-    title: "Total Budget",
-    value: "$4,200",
-    icon: <FiDollarSign size={18} />,
-    color: "text-blue-600",
-    bg: "bg-blue-50",
-    ring: "ring-blue-100",
-  },
-  {
-    title: "Released",
-    value: "$1,800",
-    icon: <FiCheckCircle size={18} />,
-    color: "text-green-600",
-    bg: "bg-green-50",
-    ring: "ring-green-100",
-  },
-  {
-    title: "In Escrow",
-    value: "$1,400",
-    icon: <FiLock size={18} />,
-    color: "text-amber-600",
-    bg: "bg-amber-50",
-    ring: "ring-amber-100",
-  },
-  {
-    title: "Remaining",
-    value: "$1,000",
-    icon: <FiClock size={18} />,
-    color: "text-purple-600",
-    bg: "bg-purple-50",
-    ring: "ring-purple-100",
-  },
-];
 
-const PaymentOverview = () => {
+
+const PaymentOverview = ({ payment }) => {
+  const stats = [
+    {
+      title: "Total Budget",
+      value: `$${payment.totleBudget}`,
+      icon: <FiDollarSign size={18} />,
+      color: "text-blue-600",
+      bg: "bg-blue-50",
+      ring: "ring-blue-100",
+    },
+    {
+      title: "Released",
+      value: `$${payment.totalReleased}`,
+      icon: <FiCheckCircle size={18} />,
+      color: "text-green-600",
+      bg: "bg-green-50",
+      ring: "ring-green-100",
+    },
+    {
+      title: "In Escrow",
+      value: `$${payment.inpendingAmount}`,
+      icon: <FiLock size={18} />,
+      color: "text-amber-600",
+      bg: "bg-amber-50",
+      ring: "ring-amber-100",
+    },
+    {
+      title: "Remaining",
+      value: `$${payment.remainingAmount}`,
+      icon: <FiClock size={18} />,
+      color: "text-purple-600",
+      bg: "bg-purple-50",
+      ring: "ring-purple-100",
+    },
+  ];
   return (
     <div
       className="
@@ -205,7 +206,7 @@ const PaymentOverview = () => {
 
         {/* Escrow Progress */}
 
-     
+
 
       </div>
     </div>

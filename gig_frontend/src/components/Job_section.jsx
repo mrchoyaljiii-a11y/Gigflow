@@ -63,12 +63,12 @@ const Job_section = () => {
       {/* job card */}
       {
         jobList && jobList.map((job) => {
-          const { _id, clientId: { company, country, email, firstName, lastName, profileImage, state }, experiance, jobtitle, maxBudget, minBudget, projectCategory, price, skills, jobDescription, status, timeline, createdAt } = job;
+          const { _id, clientId: { company, country, email, firstName, lastName, profileImage, state }, experiance, jobtitle, Budget, BudgetType,projectCategory, price, skills, jobDescription, status, timeline, createdAt } = job;
 
 
           // console.log("clientId:", clientId);
-          const formattedMinBudget = minBudget.toLocaleString();
-          const formattedMaxBudget = maxBudget.toLocaleString();
+          // const formattedMinBudget = minBudget.toLocaleString();
+          // const formattedMaxBudget = maxBudget.toLocaleString();
           const initials = `${firstName?.[0] ?? ''}${lastName?.[0] ?? ''}`.toUpperCase();
 
           return (
@@ -211,7 +211,7 @@ const Job_section = () => {
                       Budget
                     </p>
                     <p className="text-[0.9rem] font-black text-slate-800">
-                      ${formattedMinBudget} – ${formattedMaxBudget}
+                      ${Budget} {BudgetType}
                     </p>
                   </div>
                 </div>
