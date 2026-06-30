@@ -2,7 +2,6 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from '../../api/axios'
 
 // fetch user data for client and freelancer dashboard if user is client then show client dashboard and if user is freelancer then show freelancer dashboard
-
 const fetchUser = createAsyncThunk(
     'user/fetchUser',
     async (_, { rejectWithValue }) => {
@@ -17,7 +16,7 @@ const fetchUser = createAsyncThunk(
     });
     
 // fetch freelancers data in freelancer_page.jsx
-
+// replced by query
 const fetchFreelancer = createAsyncThunk(
     'user/fetchFreelancer',
     async ({ pageNo, search, limit }, { rejectWithValue }) => {
@@ -34,7 +33,7 @@ const fetchFreelancer = createAsyncThunk(
 )
 
 // fetch {specific} freelancer by id
-
+// replaced by query
 const fetchSpecificFreelancer = createAsyncThunk(
     'user/fetchSpecificFreelancer',
     async (freelancerId, { rejectWithValue }) => {

@@ -4,12 +4,14 @@ import { MdKeyboardArrowLeft, MdKeyboardArrowRight } from "react-icons/md";
 import { CiSearch, CiStar } from "react-icons/ci";
 import { FaStar } from "react-icons/fa";
 //filter component
-import Filter from './Filter';
-import { fetchFreelancer } from '../../redux/getUser/User'
+import Filter from '../../freelancer_releted/Filter';
+import { fetchFreelancer } from '../../../redux/getUser/User'
 import { useDispatch, useSelector } from 'react-redux'
 import { NavLink } from 'react-router-dom';
-import Pagination from '../../components/Pagination';
-import { HandleView } from '../../redux/Notification_actions/Notifications_actions';
+import Pagination from '../../../components/Pagination';
+import { HandleView } from '../../../redux/Notification_actions/Notifications_actions';
+import { useGetFreelancers } from '../../../hooks/Freelancer_releted/useGetFreelancers.js'
+
 const Freelancer_page = () => {
     const [page, setPage] = useState(1);
     // console.log("page", page);
@@ -19,11 +21,9 @@ const Freelancer_page = () => {
     const [searchText, setsearchText] = useState("");
     // console.log("searchText", searchText);
 
-    const { freelancerData, freelancerLoading, error } = useSelector(state => state.userSlice)
+    // const { freelancerData, freelancerLoading, error } = useSelector(state => state.userSlice)
     // console.log("freelancerData", freelancerData);
 
-    const { freelancers, pageNo, totalPages, totalFreelancers } = freelancerData;
-    console.log("freelancers", freelancers);
 
     // console.log("FilterFreelancer", filteredFreelancers);
 
@@ -34,11 +34,23 @@ const Freelancer_page = () => {
 
     // set limit from here...
 
-    useEffect(() => {
-        dispatch(fetchFreelancer({ pageNo: page, search: searchText, limit: 6 }));
-    }, [dispatch, page, appliedSearch])
+    const {
+        data: freelancerData,
+        isLoading,
+        isError,
+        error,
+    } = useGetFreelancers({
+        pageNo: page,
+        search: appliedSearch,
+        limit: 6,
+    });
 
-    if (!freelancerData || freelancerLoading) {
+    // const { freelancers, pageNo, totalPages, totalFreelancers } = freelancerData;
+
+    console.log("freelancers", freelancerData);
+
+
+    if (!freelancerData || isLoading) {
         return <div>Loading...</div>;
     }
 
@@ -97,8 +109,9 @@ const Freelancer_page = () => {
                     <div className="grid grid-cols-1 xl:grid-cols-2 gap-6  m-1">
 
                         {
-                            freelancers?.map((freelancer) => {
-                                const { profileImage, firstName, lastName, professionalTitle, freelanerSkills, profileSummary, country, state, experienceLevel, rate } = freelancer;
+                            freelancerData?.freelancers?.map((freelancer) => {
+
+                                const { profileImage, firstName, lastName, professionalTitle, freelanerSkills, profileSummary, country, state, experienceLevel, hourlyRate ,_id} = freelancer;
 
                                 {/* Freelancer Card   */ }
                                 return (
@@ -166,7 +179,7 @@ const Freelancer_page = () => {
                                                     </div>
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Hourly Rate</span>
-                                                        <span className="text-sm font-extrabold">{`$${rate}/hr`}</span>
+                                                        <span className="text-sm font-extrabold">{`$${hourlyRate}/hr`}</span>
                                                     </div>
                                                     <div className="flex flex-col gap-0.5">
                                                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Location</span>
@@ -176,15 +189,19 @@ const Freelancer_page = () => {
 
                                                 {/* buttons group */}
                                                 <div className="flex items-center gap-2">
-                                                    <button className="flex-1 h-10 bg-primary text-white text-xs font-bold rounded-lg hover:shadow-lg hover:shadow-primary/30 transition-all uppercase tracking-wider cursor-pointer">Invite to Job</button>
-                                                    <NavLink to={`/freelancers_profile/${freelancer._id}`}>
+                                                    <button className="flex-1 h-10 bg-primary text-white text-xs font-bold rounded-lg hover:shadow-lg hover:shadow-primary/30 transition-all uppercase tracking-wider cursor-pointer">
+                                                    Invite to Job
+                                                    </button>
+
+                                                    <NavLink to={`/freelancers_profile/${_id}`}>
                                                         <button className="h-10 px-4 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-xs font-bold text-gray-600 cursor-pointer"
                                                             onClick={() => dispatch(HandleView({
-                                                                freelancer_id: freelancerId._id,
+                                                                freelancer_id: _id,
                                                                 actiontype: "view"
                                                             }))
                                                             }>View Profile</button>
                                                     </NavLink>
+
                                                 </div>
 
                                             </div>
@@ -200,7 +217,7 @@ const Freelancer_page = () => {
                     {/* Pagination  */}
 
                     <Pagination
-                        totalPages={totalPages}
+                        totalPages={freelancerData.totalPages}
                         page={page}
                         setPage={setPage}
                     />

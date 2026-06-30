@@ -6,44 +6,44 @@ import { MdOutlinePsychology, MdOutlineVerified, MdOutlineNorthEast, MdMarkEmail
 import { IoBagOutline } from "react-icons/io5";
 import { CgWebsite } from "react-icons/cg";
 import { useParams } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchSpecificFreelancer } from '../../redux/getUser/User'
+import { usefetchSpecificFreelancer } from '../../hooks/Freelancer_releted/usefetchSpecificFreelancer.js'
 
 const View_freelancer_profile = () => {
-    const dispatch = useDispatch()
-    const { id } = useParams()
+    const [showFullSummary, setShowFullSummary] = useState(false)
+    const { freelancerid } = useParams()
 
-    useEffect(() => {
-        if (id) dispatch(fetchSpecificFreelancer(id))
-    }, [id, dispatch])
+    const {
+        data: sepecificFreelancerData,
+        isLoading,
+        isError,
+        error: sepecificFreelancerError
+    } = usefetchSpecificFreelancer(freelancerid)
 
-    const { sepecificFreelancerData, loading, error } = useSelector((state) => state.userSlice)
+    console.log("sepecific Freelancer Data", sepecificFreelancerData?.freelancer);
 
-    if (loading) return <p className="text-center py-20 text-gray-500">Loading...</p>
-    if (!sepecificFreelancerData) return <p className="text-center py-20 text-gray-500">No data found.</p>
+    if (isLoading) return <p className="text-center py-20 text-gray-500">Loading...</p>
+    if (!sepecificFreelancerData?.freelancer) return <p className="text-center py-20 text-gray-500">No data found.</p>
 
     const {
         firstName, lastName, professionalTitle,
         country, state,
         email, experienceLevel,
         freelanerSkills, languages,
-        linkedInLink, websitelink,
-        profileSummary, profileImage,
+        Links,
+        freelancerSummary, profileImage,
         rate, hourlyRate,
         workExperience, education,
-    } = sepecificFreelancerData
+    } = sepecificFreelancerData?.freelancer
 
     // support both `rate` and `hourlyRate` field names
     const displayRate = hourlyRate ?? rate
 
 
-    const [showFullSummary, setShowFullSummary] = useState(false)
-    
     const SUMMARY_LIMIT = 300  // chars shown when collapsed
-    const summaryIsTruncatable = profileSummary && profileSummary.length > SUMMARY_LIMIT
+    const summaryIsTruncatable = freelancerSummary && freelancerSummary.length > SUMMARY_LIMIT
     const visibleSummary = showFullSummary || !summaryIsTruncatable
-        ? profileSummary
-        : profileSummary.slice(0, SUMMARY_LIMIT).trimEnd() + '...'
+        ? freelancerSummary
+        : freelancerSummary.slice(0, SUMMARY_LIMIT).trimEnd() + '...'
 
 
     // formats month + year range string
@@ -53,14 +53,15 @@ const View_freelancer_profile = () => {
     // proficiency badge colour
     const proficiencyColor = (level = '') => {
         const l = level.toLowerCase()
-        if (l === 'native')       return 'bg-green-100 text-green-700'
-        if (l === 'fluent')       return 'bg-blue-100 text-blue-700'
+        if (l === 'native') return 'bg-green-100 text-green-700'
+        if (l === 'fluent') return 'bg-blue-100 text-blue-700'
         if (l === 'conversational') return 'bg-yellow-100 text-yellow-700'
         return 'bg-gray-100 text-gray-600'
     }
 
     return (
         <div>
+
             <main className="max-w-7xl mx-auto px-6 py-8">
 
                 {/* ── Hero card ── */}
@@ -253,8 +254,8 @@ const View_freelancer_profile = () => {
                                 </h3>
                                 <div className="flex flex-wrap gap-3">
                                     {languages.map((lang, i) => {
-                                        const name  = typeof lang === 'string' ? lang : lang.languageName
-                                        const level = typeof lang === 'object'  ? lang.proficiency : null
+                                        const name = typeof lang === 'string' ? lang : lang.languageName
+                                        const level = typeof lang === 'object' ? lang.proficiency : null
                                         return (
                                             <div key={i} className="flex items-center gap-2 border border-[#e2e8f0] rounded-lg px-4 py-2.5">
                                                 <span className="font-semibold text-[#0f172a] text-sm capitalize">{name}</span>
@@ -302,8 +303,8 @@ const View_freelancer_profile = () => {
                                     <div className="space-y-2">
 
                                         {/* LinkedIn */}
-                                        {linkedInLink && (
-                                            <a href={linkedInLink} target="_blank" rel="noreferrer"
+                                        {Links?.linkedInLink && (
+                                            <a href={Links?.linkedInLink} target="_blank" rel="noreferrer"
                                                 className="flex items-center justify-between p-3 rounded-lg hover:bg-[#f8fafc] transition-all">
                                                 <div className="flex items-center gap-3">
                                                     <div className="size-8 rounded-lg bg-[#0077b5]/10 flex items-center justify-center text-[#0077b5]">
@@ -316,8 +317,8 @@ const View_freelancer_profile = () => {
                                         )}
 
                                         {/* Website */}
-                                        {websitelink && websitelink.length > 0 && (
-                                            <a href={websitelink} target="_blank" rel="noreferrer"
+                                        {Links?.websiteLink && Links?.websiteLink.length > 0 && (
+                                            <a href={`#`} target="_blank" rel="noreferrer"
                                                 className="flex items-center justify-between p-3 rounded-lg hover:bg-[#f8fafc] transition-all">
                                                 <div className="flex items-center gap-3">
                                                     <div className="size-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
@@ -384,6 +385,7 @@ const View_freelancer_profile = () => {
                     </div>
                 </div>
             </main>
+
         </div>
     )
 }

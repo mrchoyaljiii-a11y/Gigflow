@@ -45,7 +45,7 @@ import { checkLogin } from "./redux/Auth/Auth.js";
 import { fetchUser } from "./redux/getUser/User.js";
 
 import ClientDashboard from "./pages/Navigation/Clients-Navigations/ClientDashboard.jsx";
-import Freelancer_page from "./pages/freelancer_releted/Freelancer_page.jsx";
+import Freelancer_page from "./pages/Navigation/Clients-Navigations/Freelancer_page.jsx";
 import View_freelancer_profile from "./pages/freelancer_releted/View_freelancer_profile.jsx";
 import Search_filters from "./components/Search_filters.jsx";
 import Job_section from "./components/Job_section.jsx";
@@ -67,9 +67,10 @@ import ClientContractPage from './pages/ContractPages/ClientContractPage.jsx'
 
 //apis
 import { useGetClientInfo } from './hooks/Client_releted/useGetClientInfo.js'
-import Client_profile_layout from "./pages/Navigation/Clients-Navigations/client-profile/Client_profile_layout.jsx";
-import Client_profile from "./pages/Navigation/Clients-Navigations/client-profile/Client_profile.jsx";
-
+import Client_Dashboard_layout from "./pages/Navigation/Clients-Navigations/client-profile/Client_Dashboard_layout.jsx";
+import Client_Dashboard from "./pages/Navigation/Clients-Navigations/client-profile/Client_Dashboard.jsx";
+import Client_contracts from "./pages/Navigation/Clients-Navigations/client-profile/Client_contracts.jsx";
+import Client_MYprofile from './pages/Navigation/Clients-Navigations/client-profile/Client_MYprofile.jsx';
 const router = createBrowserRouter([
   /*  PUBLIC LANDING PAGE */
   {
@@ -91,7 +92,6 @@ const router = createBrowserRouter([
   {
     path: '/freelancer_own_profile',
     element: (<Second_Layout />
-
     ),
 
     children: [
@@ -115,18 +115,27 @@ const router = createBrowserRouter([
 
   // client profile + header with no footer
   {
-    path: '/client_profile',
+    path: '/Client',
     element: (<Second_Layout />
     ),
     children: [
       {
         path: '',
-        element: (<Client_profile_layout />),
+        element: (<Client_Dashboard_layout/>),
         children: [
           {
+
             index: true,
-            element: (<Client_profile/>)
+            element: (<Client_Dashboard/>)
           },
+          {
+            path:"/Client/Contracts",
+            element:<Client_contracts/>
+          },
+          {
+            path:"/Client/MyProfile",
+            element:<Client_MYprofile/>
+          }
         ]
       },
     ]
@@ -156,7 +165,7 @@ const router = createBrowserRouter([
       },
       {
         path: "Find_freelancers",
-        element: <Freelancer_page />,
+        element: <Freelancer_page/>,
       },
       {
         path: "detailed_gig/:id",
@@ -211,7 +220,7 @@ const router = createBrowserRouter([
   },
 
   {
-    path: '/freelancers_profile/:id',
+    path: '/freelancers_profile/:freelancerid',
     element: <View_freelancer_profile />
   },
   // demo contract pages links

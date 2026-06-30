@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Handle_CreateContract, Handle_GetContractById, Handle_create_milestone } = require("../../controllers/Contract_creation");
+const { Handle_CreateContract, Handle_GetContractById, Handle_create_milestone, Handle_GetAllContracts } = require("../../controllers/Contract_creation");
 const authMiddleware = require('../../middlewares/authMiddleware');
 
 const multer = require("multer");
@@ -15,9 +15,17 @@ const upload = multer({
 
 router.post('/api/contract/create', authMiddleware, Handle_CreateContract);
 
+// get sepecific contract
 router.get('/api/contracts/:contractId',
     authMiddleware,
     Handle_GetContractById
+);
+
+//get all contracts
+router.get(
+    "/api/contracts",
+    authMiddleware,
+    Handle_GetAllContracts
 );
 
 // create the miltestones for the contract

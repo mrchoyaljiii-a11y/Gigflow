@@ -45,10 +45,9 @@ const UserProfile = () => {
     languages = [],
     clientType,
     company,
-    websitelink,
-    linkedInLink,
+    links=[],
     hiringCategories = [],
-    professionalTitle,
+    clientSummary,
     professionalCategory,
     experienceLevel,
     freelancerLink,
@@ -96,8 +95,8 @@ const UserProfile = () => {
               </span>
             </div>
 
-            <p className="mt-1 text-gray-700">
-              {professionalTitle || company}
+            <p className="mt-1 text-grawebsiteLinky-700">
+              {clientSummary || company?.name}
             </p>
 
             <div className="mt-2 flex flex-wrap gap-4 text-sm text-gray-600">
@@ -144,9 +143,9 @@ const UserProfile = () => {
                   </button>
                 </NavLink>
 
-                {websitelink && (
+                {links.websiteLink && (
                   <a
-                    href={websitelink}
+                    href={links.websiteLink}
                     target="_blank"
                     rel="noreferrer"
                     className="px-4 py-2 border rounded-lg cursor-pointer"
@@ -224,7 +223,7 @@ const UserProfile = () => {
                 </p>
 
                 <p className="text-sm text-gray-600">
-                  <strong>Company:</strong> {company}
+                  <strong>Company:</strong> {company?.name}
                 </p>
 
                 {hiringCategories.length > 0 && (
@@ -256,7 +255,7 @@ const UserProfile = () => {
             </p>
 
             <p className="text-sm text-gray-600">
-              <strong>Username:</strong> @{userName}
+              {/* <strong>Username:</strong> @{userName} */}
             </p>
 
             <div className="group flex flex-col gap-2 mt-4">
@@ -274,7 +273,7 @@ const UserProfile = () => {
 
               {role === "client" && (
                 <a
-                  href={websitelink}
+                  href={links.websiteLink}
                   target="_blank"
                   rel="noreferrer"
                   className="text-sm text-blue-600 hover:underline border-2 border-blue-600 rounded px-3 py-1 w-50"
@@ -283,9 +282,9 @@ const UserProfile = () => {
                 </a>
               )}
 
-              {linkedInLink && (
+              {links.linkedInLink && (
                 <a
-                  href={linkedInLink}
+                  href={links.linkedInLink}
                   target="_blank"
                   rel="noreferrer"
                   className=" text-sm text-blue-600 hover:underline border-2 border-blue-600 rounded px-3 py-1 w-50"
@@ -303,7 +302,7 @@ const UserProfile = () => {
   );
 
 
-  
+
 };
 
 export default UserProfile;

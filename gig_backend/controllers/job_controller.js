@@ -122,7 +122,7 @@ async function Handle_Getjob(req, res) {
 async function Handle_GetClientsJobs(req, res) {
     try {
         const AuthenticatedClientID = req.user._id;
-        const Clientjobs = await jobModel.find({ clientId: AuthenticatedClientID }).populate("clientId", "firstName lastName company profileImage email country state");
+        const Clientjobs = await jobModel.find({ clientId: AuthenticatedClientID }).sort({ createdAt: -1 }).populate("clientId", "firstName lastName company profileImage email country state");
         return res.json({
             success: true,
             Clientjobs: Clientjobs || [],

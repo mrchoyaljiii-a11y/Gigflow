@@ -3,65 +3,95 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const userModel = require('../model/UserModel/User_model');
+const FreelancerModel = require('../model/UserModel/Freelancer_Model');
 const cloudinary = require('../connections/cloudinary');
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// these function are handle user info when user create account 
+// these function are handle user info when user create account || its signup 
 async function Handle_UserSignup(req, res) {
     try {
         const { profileImage, ...userData } = req.body;
-        const { email, password } = userData;
+        const { email, password, role } = userData;
 
-        // console.log("User signup data:", userData);
-        // console.log("Profile Image data:", profileImage);
+        if (!email || !password) {
+            console.error("Email and password are required");
+
+            return res.status(400).json({
+                success: false,
+                message: "Email and password are required",
+            });
+        }
+
+        if (!["freelancer", "client"].includes(role)) {
+
+            console.log("Invalid role");
+
+            return res.status(400).json({
+                success: false,
+                message: "Invalid role",
+            });
+        }
+
+        const existingClient = await userModel.findOne({ email });
+        const existingFreelancer = await FreelancerModel.findOne({ email });
+
+
+        if (existingClient || existingFreelancer) {
+
+            console.error("existingClient");
+            return res.status(400).json({
+                success: false,
+                message: "Email already registered",
+            });
+        }
 
         let uploadedImg = null;
 
         if (profileImage) {
             uploadedImg = await cloudinary.uploader.upload(profileImage, {
                 folder: "profile_images",
-                resource_type: "image"
+                resource_type: "image",
             });
         }
-
-        // console.log("Uploaded Image Info:", uploadedImg);
-
-        const existingUser = await userModel.findOne({ email: email });
-        if (existingUser) {
-            return res.status(400).json({
-                success: false,
-                message: "User already exists with this email"
-            });
-        }
-
-        // !hash password
 
         const hashpassword = await bcrypt.hash(password, 10);
 
-        const newUser = new userModel({
+        const Model =
+            role === "freelancer"
+                ? FreelancerModel
+                : userModel;
+
+        const newUser = new Model({
             ...userData,
-            profileImage: {
-                url: uploadedImg?.secure_url,
-                public_id: uploadedImg?.public_id,
-            },
-            password: hashpassword
+            profileImage: uploadedImg
+                ? {
+                    url: uploadedImg.secure_url,
+                    public_id: uploadedImg.public_id,
+                }
+                : undefined,
+            password: hashpassword,
         });
 
         const SavedUser = await newUser.save();
+        // console.log("SavedUser", SavedUser);
+
+        const user = SavedUser.toObject();
+        delete user.password;
+
         return res.status(201).json({
             success: true,
-            user: SavedUser,
-            message: "User registered successfully"
-        })
-    }
-    catch (error) {
-        console.log("Error in Handle_UserSignup:", error);
-        return res.status(400).json({
-            success: false,
-            message: `alreaady exists : ${error}`
-        })
-    }
+            user,
+            message: "User registered successfully",
+        });
 
+    } catch (error) {
+        console.error("Error in Handle_UserSignup:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Something went wrong while registering the user",
+        });
+    }
 }
 
 // user login

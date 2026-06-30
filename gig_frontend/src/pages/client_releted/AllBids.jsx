@@ -242,7 +242,7 @@ const AllBids = () => {
                     bidId: bidItem._id,
                     clientid: bidItem.clientId,
                     clientCompanyName:
-                        filtered_job[0]?.clientId?.company,
+                        filtered_job[0]?.clientId?.company?.name,
                     clientName:
                         `${filtered_job[0]?.clientId?.firstName}
                     ${filtered_job[0]?.clientId?.lastName}`,
@@ -258,7 +258,7 @@ const AllBids = () => {
                 jobId: gig_id,
                 bidId: bidItem._id,
                 freelancerId,
-                clientCompanyName: filtered_job[0]?.clientId?.company,
+                clientCompanyName: filtered_job[0]?.clientId?.company?.name,
                 agreedPrice: bidItem.bid,
                 timeline: bidItem.timeline,
                 gigName: filtered_job[0]?.jobtitle,
@@ -375,7 +375,7 @@ const AllBids = () => {
                         GiG Name : {filtered_job[0]?.jobtitle}
                     </h2>
                     <p className="text-sm text-slate-500">
-                        By Client: {filtered_job[0]?.clientId?.company}
+                        By Client: {filtered_job[0]?.clientId?.company?.name}
                     </p>
                 </div>
 

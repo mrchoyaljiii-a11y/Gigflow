@@ -187,4 +187,23 @@ async function Handle_GetHiredByFreelancer(req, res) {
         });
     }
 }
-module.exports = { Handle_SubmitHired, Handle_GetHired, Handle_GetHiredByFreelancer };
+
+// fetch the All hired records by a client
+async function Handle_GetAllHired(req, res) {
+    try {
+        const AuthenticatedClientID = req.user._id;
+        const hiredRecords = await Hired.find({ clientId: AuthenticatedClientID }).sort({ createdAt: -1 }).populate("clientId", "firstName lastName email profileImage").populate("freelancerId", "firstName lastName email profileImage");
+
+        
+        return res.json({
+            success: true,
+            hired: hiredRecords,
+            message: "Hired records fetched successfully"
+        });
+
+    } catch (error) {
+        console.log("Error in Handle_GetAllHired:", error);
+        res.status(500).send("Internal Server Error from Handle_GetAllHired");
+    }
+}
+module.exports = { Handle_SubmitHired, Handle_GetHired, Handle_GetHiredByFreelancer,Handle_GetAllHired };

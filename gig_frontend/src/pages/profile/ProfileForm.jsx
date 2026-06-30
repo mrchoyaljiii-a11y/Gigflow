@@ -16,6 +16,7 @@ import { FaLaptopCode } from "react-icons/fa";
 import { FaRegUserCircle } from "react-icons/fa";
 import { IoMdCloudUpload } from "react-icons/io";
 import { registerUser } from '../../redux/Auth/Auth'
+import { useRegisterNewUser } from '../../hooks/Client_releted/useRegisterNewUser.js'
 
 //  constants used by both modals 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -333,6 +334,19 @@ const LanguageModel = ({ language, index, handleChange, handleRemove }) => {
 
 //  MAIN COMPONENT
 const ProfileForm = () => {
+    const [serverError, setServerError] = useState(null)
+
+    const {
+        mutateAsync: registerUserMutation,
+        data: userresponse,
+        isPending,
+        isError,
+        isSuccess,
+        error,
+    } = useRegisterNewUser();
+
+
+
     const [nextStage, setnextStage] = useState(1)
 
     const [languages, setLanguages] = useState([
@@ -378,7 +392,7 @@ const ProfileForm = () => {
     const [profilePreview, setProfilePreview] = useState(null)
     const [profileImageBase64, setProfileImageBase64] = useState(null)
 
-    const [serverError, setServerError] = useState(null)
+
 
 
     const [experiences, setExperiences] = useState([])       // list of work exp objects
@@ -390,12 +404,48 @@ const ProfileForm = () => {
     const [editingEduIdx, setEditingEduIdx] = useState(null)
 
     const [hourlyRate, setHourlyRate] = useState(20)         // live slider value
-    const serviceFee = +(hourlyRate * 0.1).toFixed(2)        // 10% platform fee
+    const serviceFee = + (hourlyRate * 0.1).toFixed(2)        // 10% platform fee
     const youGet = +(hourlyRate - serviceFee).toFixed(2) // what freelancer receives
 
+    const [companySize, setcompanySize] = useState(null)
+
+
+
+    function HandleCompanySize(index) {
+        setcompanySize(index)
+    }
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
+
+    // select insustry type used in step 3 role == client
+    const industryTypes = [
+        "Information Technology",
+        "Software & SaaS",
+        "E-commerce",
+        "Finance & Banking",
+        "Healthcare",
+        "Education",
+        "Marketing & Advertising",
+        "Media & Entertainment",
+        "Real Estate",
+        "Manufacturing",
+        "Construction",
+        "Travel & Hospitality",
+        "Food & Beverage",
+        "Automotive",
+        "Telecommunications",
+        "Consulting",
+        "Human Resources",
+        "Legal Services",
+        "Retail",
+        "Logistics & Supply Chain",
+        "Agriculture",
+        "Energy & Utilities",
+        "Non-Profit",
+        "Government",
+        "Other",
+    ];
 
     const {
         register,
@@ -403,10 +453,17 @@ const ProfileForm = () => {
         watch,
         trigger,
         formState: { errors }
-    } = useForm()
+    } = useForm(
+        {
+            defaultValues: {
+                ClientType: 'individual'
+            },
+        }
+    )
 
     const password = watch('password', '')
-    const selectedRole = watch("role")
+    const selectedRole = watch("role") // freelancer or client
+    const clientType = watch("ClientType"); // uswed in step 3 from client type individual or company
 
     // dropzone 
     const onDrop = (acceptedFiles) => {
@@ -455,7 +512,7 @@ const ProfileForm = () => {
         }
 
         if (nextStage === 2) {
-            isValid = await trigger(["FirstName", "LastName", "country", "state", "userName"])
+            isValid = await trigger(["FirstName", "LastName", "country", "state",])
             // if (languages.length === 0) {
             //     setLanguageError(true)
             //     isValid = false
@@ -465,11 +522,11 @@ const ProfileForm = () => {
         }
 
         if (nextStage === 3 && selectedRole === 'client') {
-            isValid = await trigger(["ClientType", "ProfileSummary"])
+            isValid = await trigger(["ClientRole", "clientSummary", "Company", "companySize", "industryType"])
         }
 
         if (nextStage === 3 && selectedRole === 'freelancer') {
-            isValid = await trigger(["ProfessionalTitle", "ProfessionalCategory", "ExperienceLevel", "rate"])
+            isValid = await trigger(["professionalTitle", "ProfessionalCategory", "ExperienceLevel", "rate"])
         }
 
         // stages 4 (work exp) and 5 (education) are optional — always allow Next
@@ -545,43 +602,82 @@ const ProfileForm = () => {
 
     //  your original onSubmit — extended with new fields 
     const onSubmit = async (data) => {
-        const updatedData = {
-            role: data.role,
-            firstName: data.FirstName,
-            lastName: data.LastName,
-            userName: data.userName,
-            country: data.country,
-            state: data.state,
-            languages: languages,
-            clientType: data.ClientType,
-            company: data.Company,
-            // websitelink: data.websiteLink,
-            // linkedInLink: data.linkedInLink,
-            Links:{
-                websiteLink: data.websiteLink,
-                linkedInLink: data.linkedInLink
-            },
-            hiringCategories: hiringCategories,
-            professionalTitle: data.ProfessionalTitle,
-            professionalCategory: data.ProfessionalCategory,
-            experienceLevel: data.ExperienceLevel,
-            freelanerSkills: hiringCategories,
-            ProfessionalSummary: data.ProfessionalSummary,
-            email: data.email,
-            password: data.password,
-            profileImage: profileImageBase64,
-            workExperience: experiences,
-            education: education,
-            hourlyRate: hourlyRate,
+
+        let data_to_update = {};
+
+        if (selectedRole === "freelancer") {
+            data_to_update = {
+                role: data.role, // both
+                firstName: data.FirstName, //both
+                lastName: data.LastName, // both
+                // userName: data.userName,
+                country: data.country, //both
+                state: data.state, //both
+                languages: languages, // both
+                Links: {  // both
+                    websiteLink: data.websiteLink || "",
+                    linkedInLink: data.linkedInLink || "",
+                },
+                professionalTitle: data.professionalTitle, // freelancer
+                professionalCategory: data.ProfessionalCategory, // freelancer
+                experienceLevel: data.ExperienceLevel,  //freelancer
+                freelanerSkills: hiringCategories,  //freelancer
+                freelancerSummary: data.freelancerSummary, // freelancer
+                email: data.email, // both
+                password: data.password, //both
+                profileImage: profileImageBase64, //both
+                workExperience: experiences,  // freelancer
+                education: education,  // freelancer
+                hourlyRate: hourlyRate,  // freelancer
+            }
         }
-        console.log("Final submitted data:", updatedData)
+
+        if (selectedRole === "client") {
+            data_to_update = {
+                role: data.role, // both
+                firstName: data.FirstName, //both
+                lastName: data.LastName, // both
+                country: data.country, //both
+                state: data.state, //both
+                languages: languages, // both
+                clientType: data.ClientType, //client
+                clientRole: data.ClientRole, //client
+                clientSummary: data.clientSummary, //client
+                Links: {  // both
+                    websiteLink: data.websiteLink || "",
+                    linkedInLink: data.linkedInLink || "",
+                },
+                hiringCategories: hiringCategories, //client
+                email: data.email, // both
+                password: data.password, //both
+                profileImage: profileImageBase64, //both
+                company: {          // client
+                    name: data.Company || "",
+                    companySize: data.companySize || "",
+                    companySummary: data.companySummary || "",
+                    industryType: data.industryType || "",
+                },
+            }
+        }
+
+        console.log("Final submitted data:", data_to_update)
+
         setServerError(null)
         try {
-            dispatch(registerUser(updatedData))
-            navigate('/login')
+            // dispatch(registerUser(data_to_update))
+            const response = await registerUserMutation(data_to_update);
+
+            console.log("user response", response);
+
+            if (response?.success) {
+                navigate('/login')
+            }else{
+                setServerError(response?.message || 'Signup failed.')
+            }
+
         } catch (error) {
-            console.log("Signup error", error)
-            setServerError(error.response?.data?.message || 'Signup failed.')
+            console.log("Signup error", error);
+            setServerError(error || 'Signup failed.')
         }
     }
 
@@ -680,13 +776,16 @@ const ProfileForm = () => {
                                         <FaRegUserCircle size={100} className="mx-auto text-gray-400" />
                                     )}
                                 </div>
-                                <p className="text-sm">Upload Photo</p>
+                                <p className="text-sm">Upload Photo <span className="text-primary font-semibold">(optional)</span></p>
                             </div>
 
                             {/* first + last name */}
                             <div className="group flex gap-4">
                                 <div className="mt-6 text-left w-1/2">
-
+                                    <label className="font-medium"
+                                        htmlFor="first_name">
+                                        First Name <span className="text-red-500 ">*</span>
+                                    </label>
                                     <input
                                         placeholder="First name"
                                         id='first_name'
@@ -695,9 +794,15 @@ const ProfileForm = () => {
                                     />
                                     {errors.FirstName && <p className="text-red-500 text-sm">{errors.FirstName.message}</p>}
                                 </div>
+
                                 <div className="mt-6 text-left w-1/2">
+                                    <label className="font-medium"
+                                        htmlFor="last_name">
+                                        Last Name <span className="text-red-500 ">*</span>
+                                    </label>
                                     <input
                                         placeholder="Last name"
+                                        id='last_name'
                                         {...register("LastName", { required: "Last name is required" })}
                                         className="w-full border rounded-lg p-2"
                                     />
@@ -705,27 +810,30 @@ const ProfileForm = () => {
                                 </div>
                             </div>
 
-                            <div className="mt-6 text-left">
-                                <input
-                                    placeholder="User Name"
-                                    {...register("userName", { required: "Username is required" })}
-                                    className="w-full border rounded-lg p-2"
-                                />
-                                {errors.userName && <p className="text-red-500 text-sm">{errors.userName.message}</p>}
-                            </div>
+
 
                             <div className="flex gap-4 mt-6">
                                 <div className="w-1/2 text-left">
+                                    <label className="font-medium"
+                                        htmlFor="country">
+                                        Country <span className="text-red-500 ">*</span>
+                                    </label>
                                     <input
                                         placeholder="Country"
+                                        id='country'
                                         {...register("country", { required: "Country is required" })}
                                         className="w-full border rounded-lg p-2"
                                     />
                                     {errors.country && <p className="text-red-500 text-sm">{errors.country.message}</p>}
                                 </div>
                                 <div className="w-1/2 text-left">
+                                    <label className="font-medium"
+                                        htmlFor="state">
+                                        State <span className="text-red-500 ">*</span>
+                                    </label>
                                     <input
                                         placeholder="State"
+                                        id='state'
                                         {...register("state", { required: "State is required" })}
                                         className="w-full border rounded-lg p-2"
                                     />
@@ -776,81 +884,386 @@ const ProfileForm = () => {
                         </div>
                     )}
 
-                    {/*  STAGE 3 CLIENT  */}
+                    {/* STAGE 3 CLIENT */}
                     {nextStage === 3 && selectedRole === "client" && (
                         <div className="stage-2 mt-6 border w-full p-6 rounded-lg">
+
+                            {/* Client Type */}
+                            <div className="text-left">
+                                <label className="font-medium">
+                                    Who are you hiring for?
+                                </label>
+
+                                <div className="flex gap-4 mt-3">
+                                    {[
+                                        {
+                                            value: "individual",
+                                            label: "Individual",
+                                        },
+                                        {
+                                            value: "business",
+                                            label: "Business / Company",
+                                        },
+                                    ].map((item, index) => (
+                                        <label
+                                            key={item.value}
+                                            className="flex-1 cursor-pointer"
+                                        >
+                                            <input
+                                                type="radio"
+                                                value={item.value}
+                                                {...register("ClientType", {
+                                                    required:
+                                                        "Please select client type",
+                                                })}
+                                                className="hidden peer"
+                                            />
+
+                                            <div
+                                                className={`border rounded-lg p-4 text-center transition
+          ${clientType === item.value
+                                                        ? "bg-blue-50 border-primary"
+                                                        : "border-gray-300 hover:border-primary"
+                                                    }`}
+                                            >
+                                                {item.label}
+                                            </div>
+                                        </label>
+                                    ))}
+                                </div>
+
+                                {errors.ClientType && (
+                                    <p className="text-red-500 text-sm mt-1">
+                                        {errors.ClientType.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Role */}
                             <div className="mt-6 text-left">
-                                <label htmlFor="Clienttype">Client type</label>
+                                <label htmlFor="ClientRole"
+                                >
+                                    Your Role <span className="text-red-500">*</span>
+                                </label>
+
                                 <input
-                                    placeholder="Client type (individual / business)"
-                                    id="Clienttype"
-                                    {...register("ClientType", { required: "Client type is required" })}
+                                    id="ClientRole"
+                                    placeholder={
+                                        clientType === "business"
+                                            ? "Founder, CEO, Product Manager..."
+                                            : "Student, Entrepreneur, Content Creator..."
+                                    }
+                                    {...register("ClientRole", {
+                                        required:
+                                            "Your role is required",
+                                    })}
                                     className="w-full border rounded-lg p-2"
                                 />
-                                {errors.ClientType && <p className="text-red-500 text-sm">{errors.ClientType.message}</p>}
+
+                                {errors.ClientRole && (
+                                    <p className="text-red-500 text-sm">
+                                        {errors.ClientRole.message}
+                                    </p>
+                                )}
                             </div>
 
-                            <div className="text-left mt-4">
-                                <label htmlFor="Company">Company / brand name</label>
-                                <input
-                                    placeholder="Company / brand name"
-                                    id="Company"
-                                    {...register("Company")}
-                                    className="w-full border rounded-lg p-2"
-                                />
-                            </div>
-
-                            <div className="group flex gap-4 mt-6">
-                                <div className="w-1/2 text-left">
-                                    <label htmlFor="websiteLink">Website link <span className="text-sm font-medium text-primary">optional</span></label>
-                                    <input placeholder="Website link" id="websiteLink" {...register("websiteLink")} className="w-full border rounded-lg p-2" />
-                                </div>
-                                <div className="w-1/2 text-left">
-                                    <label htmlFor="linkedInLink">LinkedIn link <span className="text-sm font-medium text-primary">optional</span></label>
-                                    <input placeholder="LinkedIn link" id="linkedInLink" {...register("linkedInLink")} className="w-full border rounded-lg p-2" />
-                                </div>
-                            </div>
-
-                            {/* hiring categories */}
+                            {/* About You */}
                             <div className="mt-6 text-left">
-                                <label>Add Hiring categories <span className="text-sm font-medium text-primary">optional</span></label>
+                                <label className="block mb-2">
+                                    About You <span className="text-red-500">*</span>
+                                </label>
+
+                                <textarea
+                                    placeholder={
+                                        clientType === "business"
+                                            ? "Tell freelancers about yourself, your role, and how you like to work..."
+                                            : "Tell freelancers about yourself and the projects you usually hire for..."
+                                    }
+                                    {...register("clientSummary", {
+                                        required:
+                                            "Please tell freelancers about yourself",
+                                        maxLength: {
+                                            value: 500,
+                                            message:
+                                                "Maximum 500 characters",
+                                        },
+                                    })}
+                                    className="w-full border rounded-lg p-2"
+                                    rows={4}
+                                />
+
+                                {errors.clientSummary && (
+                                    <p className="text-red-500 text-sm">
+                                        {errors.clientSummary.message}
+                                    </p>
+                                )}
+                            </div>
+
+                            {/* Links */}
+                            {clientType === "individual" &&
+                                (<div className="group flex gap-4 mt-6">
+                                    <div className="w-1/2 text-left">
+                                        <label>
+                                            Your Website
+                                            <span className="text-sm text-primary ml-1">
+                                                optional
+                                            </span>
+                                        </label>
+
+                                        <input
+                                            placeholder="https://Your website.com"
+                                            {...register("websiteLink")}
+                                            className="w-full border rounded-lg p-2"
+                                        />
+                                    </div>
+
+                                    <div className="w-1/2 text-left">
+                                        <label>
+                                            LinkedIn
+                                            <span className="text-sm text-primary ml-1">
+                                                optional
+                                            </span>
+                                        </label>
+
+                                        <input
+                                            placeholder="https://linkedin.com/..."
+                                            {...register("linkedInLink")}
+                                            className="w-full border rounded-lg p-2"
+                                        />
+                                    </div>
+                                </div>)
+                            }
+
+                            {/* Hiring Categories */}
+                            <div className="mt-6 text-left">
+                                <label>
+                                    What do you usually hire freelancers for?
+                                    <span className="text-sm text-primary ml-1">
+                                        optional
+                                    </span>
+                                </label>
+
                                 <div className="flex gap-2 mt-1">
                                     <input
                                         value={hiringCategoriesInput}
-                                        onChange={(e) => setHiringCategoriesInput(e.target.value)}
+                                        onChange={(e) =>
+                                            setHiringCategoriesInput(
+                                                e.target.value
+                                            )
+                                        }
                                         className="flex-1 border rounded-lg p-2"
-                                        placeholder="e.g web development, graphic design..."
+                                        placeholder="Web Development, UI Design, Video Editing..."
                                     />
-                                    <button type="button" onClick={handleAddHiringCategory}
-                                        className="border border-primary text-primary px-4 rounded-lg">
+
+                                    <button
+                                        type="button"
+                                        onClick={handleAddHiringCategory}
+                                        className="border border-primary text-primary px-4 rounded-lg"
+                                    >
                                         + Add
                                     </button>
                                 </div>
+
                                 <div className="flex flex-wrap gap-2 mt-3">
                                     {hiringCategories.map((cat, i) => (
-                                        <span key={i} className="bg-blue-100 px-3 py-1 rounded-full text-sm">
+                                        <span
+                                            key={i}
+                                            className="bg-blue-100 px-3 py-1 rounded-full text-sm"
+                                        >
                                             {cat}
-                                            <button type="button" onClick={() => handleRemoveHiringCategory(cat)} className="ml-2 hover:text-red-600">&#10005;</button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    handleRemoveHiringCategory(
+                                                        cat
+                                                    )
+                                                }
+                                                className="ml-2 hover:text-red-600"
+                                            >
+                                                &#10005;
+                                            </button>
                                         </span>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* profile summary */}
-                            <div className="profile-summary mt-6">
-                                <label htmlFor="ProfileSummary" className="text-left block mb-2">Profile Summary</label>
-                                <textarea
-                                    id="ProfileSummary"
-                                    placeholder="Give your profile overview"
-                                    {...register("ProfessionalSummary", {
-                                        required: "Profile summary is required",
-                                        maxLength: { value: 500, message: "Profile summary cannot exceed 500 characters" }
-                                    })}
-                                    className="w-full border rounded-lg p-2"
-                                    rows="4"
-                                />
-                                {errors.ProfessionalSummary && <p className="text-red-500 text-sm">{errors.ProfessionalSummary.message}</p>}
-                            </div>
+                            {/* Business Fields */}
+                            {clientType === "business" && (
+                                <>
+                                    {/* Company name*/}
+                                    <div className="text-left mt-6">
+                                        <label htmlFor="Company">
+                                            Company Name <span className="text-red-500">*</span>
+                                        </label>
+
+                                        <input
+                                            id="Company"
+                                            placeholder="Microsoft, Google, Amazon..."
+                                            {...register("Company", {
+                                                required: "Company name is required",
+                                                maxLength: {
+                                                    value: 50,
+                                                    message:
+                                                        "Maximum 50 characters",
+                                                },
+                                            }
+
+                                            )}
+                                            className="w-full border rounded-lg p-2"
+                                        />
+                                        {
+                                            errors.Company && <span className="text-red-500 text-sm">{errors.Company.message}</span>
+                                        }
+                                    </div>
+
+                                    {/* industry type */}
+                                    <div className="text-left mt-6">
+                                        <label htmlFor="industryType">
+                                            Industry Type <span className="text-red-500">*</span>
+                                        </label>
+
+                                        <select
+                                            id="industryType"
+                                            {...register("industryType", {
+                                                required: "Please select an industry",
+                                            })}
+                                            className="w-full border rounded-lg p-2 bg-white"
+                                            defaultValue=""
+                                        >
+                                            <option value="" disabled>
+                                                Select Industry
+                                            </option>
+
+                                            {industryTypes.map((industry) => (
+                                                <option key={industry} value={industry}>
+                                                    {industry}
+                                                </option>
+                                            ))}
+                                        </select>
+
+                                        {errors?.company?.industryType && (
+                                            <p className="text-red-500 text-sm mt-1">
+                                                {errors.company.industryType.message}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* Links */}
+                                    <div className="group flex gap-4 mt-6">
+                                        <div className="w-1/2 text-left">
+                                            <label>
+                                                Company Website
+                                                <span className="text-sm text-primary ml-1">
+                                                    optional
+                                                </span>
+                                            </label>
+
+                                            <input
+                                                placeholder="https://company.com"
+                                                {...register("websiteLink")}
+                                                className="w-full border rounded-lg p-2"
+                                            />
+                                        </div>
+
+                                        <div className="w-1/2 text-left">
+                                            <label>
+                                                LinkedIn
+                                                <span className="text-sm text-primary ml-1">
+                                                    optional
+                                                </span>
+                                            </label>
+
+                                            <input
+                                                placeholder="https://linkedin.com/company/..."
+                                                {...register("linkedInLink")}
+                                                className="w-full border rounded-lg p-2"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Company Size */}
+                                    <div className="mt-6 text-left">
+                                        <p>
+                                            How many people are in your
+                                            organization?
+                                            <span className="text-red-500">*</span>
+                                        </p>
+
+                                        <div className="mt-2 flex flex-wrap gap-3">
+                                            {[
+                                                "Just me",
+                                                "2-10",
+                                                "10-50",
+                                                "50-100",
+                                                "100-500",
+                                                "500-1000",
+                                                "1000+",
+                                            ].map((option, index) => (
+                                                <div key={option}>
+                                                    <input
+                                                        type="radio"
+                                                        id={option}
+                                                        value={option}
+                                                        {...register("companySize", {
+                                                            required: "Company size is required",
+                                                        })}
+                                                        className="hidden"
+                                                        onClick={() =>
+                                                            HandleCompanySize(index)
+                                                        }
+                                                    />
+
+                                                    <label
+                                                        htmlFor={option}
+                                                        className={`cursor-pointer border border-primary text-primary p-1 rounded-lg hover:bg-primary hover:text-white transition ${companySize === index
+                                                            ? "bg-primary text-white"
+                                                            : ""
+                                                            }`}
+                                                    >
+                                                        {option}
+                                                    </label>
+
+                                                </div>
+
+                                            ))}
+                                            {
+                                                errors.companySize && <span className="text-red-500 text-sm">{errors.companySize.message}</span>
+                                            }
+                                        </div>
+                                    </div>
+
+                                    {/* Company Summary */}
+                                    <div className="mt-6 text-left">
+                                        <label className="block mb-2">
+                                            About Company
+                                            <span className="text-sm text-primary ml-1">
+                                                optional
+                                            </span>
+                                        </label>
+
+                                        <textarea
+                                            placeholder="Tell freelancers about your company and what products or services you build..."
+                                            {...register("companySummary", {
+                                                maxLength: {
+                                                    value: 500,
+                                                    message:
+                                                        "Maximum 500 characters",
+                                                },
+                                            })}
+                                            className="w-full border rounded-lg p-2"
+                                            rows={4}
+                                        />
+
+                                        {errors.companySummary && (
+                                            <p className="text-red-500 text-sm">
+                                                {errors.companySummary.message}
+                                            </p>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+
                         </div>
                     )}
 
@@ -858,18 +1271,18 @@ const ProfileForm = () => {
                     {nextStage === 3 && selectedRole === "freelancer" && (
                         <div className="stage-2 mt-6 border w-full p-6 rounded-lg">
                             <div className="mt-6 text-left">
-                                <label htmlFor="ProfessionalTitle">Professional Title</label>
+                                <label htmlFor="professionalTitle">Professional Title <span className="text-red-500">*</span></label>
                                 <input
                                     placeholder="Full-Stack MERN Developer"
-                                    id="ProfessionalTitle"
-                                    {...register("ProfessionalTitle", { required: "Professional title is required" })}
+                                    id="professionalTitle"
+                                    {...register("professionalTitle", { required: "Professional title is required" })}
                                     className="w-full border rounded-lg p-2"
                                 />
-                                {errors.ProfessionalTitle && <p className="text-red-500 text-sm">{errors.ProfessionalTitle.message}</p>}
+                                {errors.professionalTitle && <p className="text-red-500 text-sm">{errors.professionalTitle.message}</p>}
                             </div>
 
                             <div className="mt-6 text-left">
-                                <label htmlFor="ProfessionalCategory">Professional Category</label>
+                                <label htmlFor="ProfessionalCategory">Professional Category <span className="text-red-500">*</span> </label>
                                 <input
                                     placeholder="Web Development, Mobile App Development, Design"
                                     id="ProfessionalCategory"
@@ -881,7 +1294,7 @@ const ProfileForm = () => {
 
                             <div className="flex gap-4 mt-6">
                                 <div className="w-1/2 text-left">
-                                    <label htmlFor="ExperienceLevel">Experience Level</label>
+                                    <label htmlFor="ExperienceLevel">Experience Level <span className="text-red-500">*</span> </label>
                                     <select
                                         id="ExperienceLevel"
                                         className="border rounded-lg p-2 w-full"
@@ -894,7 +1307,7 @@ const ProfileForm = () => {
                                     </select>
                                     {errors.ExperienceLevel && <p className="text-red-500 text-sm">{errors.ExperienceLevel.message}</p>}
                                 </div>
-                                
+
                             </div>
 
                             <div className="group flex gap-4 mt-6">
@@ -935,18 +1348,17 @@ const ProfileForm = () => {
 
                             {/* profile summary */}
                             <div className="profile-summary mt-6">
-                                <label htmlFor="ProfessionalSummary" className="text-left block mb-2">Professional Summary</label>
+                                <label htmlFor="clientSummary" className="text-left block mb-2">Professional Summary <span className="text-primary font-semibold">(optional)</span></label>
                                 <textarea
-                                    id="ProfessionalSummary"
+                                    id="clientSummary"
                                     placeholder="Give your profile overview"
-                                    {...register("ProfileSummary", {
-                                        required: "Professional summary is required",
+                                    {...register("freelancerSummary", {
                                         maxLength: { value: 500, message: "Profile summary cannot exceed 500 characters" }
                                     })}
                                     className="w-full border rounded-lg p-2"
                                     rows="4"
                                 />
-                                {errors.ProfileSummary && <p className="text-red-500 text-sm">{errors.ProfileSummary.message}</p>}
+
                             </div>
                         </div>
                     )}

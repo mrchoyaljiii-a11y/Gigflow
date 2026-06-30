@@ -14,6 +14,7 @@ const Auth_router = require('./routers/Auth_router/Auth_router');
 const Bid_router = require('./routers/Bid_router/Bid_router');
 const hired_router = require('./routers/hired_Freelancer/hired_router');
 const user_router = require('./routers/User_router/User_router');
+const Freelancer_router = require('./routers/Freelancer_releted_router/Freelancers_router');
 const notification_router = require('./routers/Notification/notification_roter'); 
 const Extra_info_router = require('./routers/Extra_user_info/Extra_info');
 const contract_router = require('./routers/contract_router/contract_router');
@@ -48,6 +49,7 @@ app.use(Auth_router);
 app.use(Bid_router);
 app.use(hired_router);
 app.use(user_router);
+app.use(Freelancer_router);
 app.use(notification_router); 
 app.use(Extra_info_router);
 app.use(contract_router); //line 53

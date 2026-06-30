@@ -1,4 +1,4 @@
-import React,{useEffect,useState} from "react";
+import React, { useEffect, useState } from "react";
 import { showToast } from '../../redux/Tost/Tost_slice.js'
 import ContractHeader from "./ContractHeader";
 import FreelancerCard from "./FreelancerCard";
@@ -12,17 +12,16 @@ import { useContract } from '../../hooks/useContract';
 import { useDispatch } from "react-redux";
 
 const ClientContractPage = () => {
-    const [showTost,setShowTost] = useState({
-        show:false,
-        message:""
+    const [showTost, setShowTost] = useState({
+        show: false,
+        message: ""
     })
 
     // console.log("showTost",showTost);
     const dispatch = useDispatch();
 
-    if(showTost.show)
-    {
-        console.log("inside if showTost",showTost);
+    if (showTost.show) {
+        console.log("inside if showTost", showTost);
         dispatch(showToast(showTost.message));
     }
 
@@ -47,7 +46,11 @@ const ClientContractPage = () => {
     return (
         <div className="min-h-screen bg-slate-100">
             {/* Gradient Header */}
-            <ContractHeader />
+            <ContractHeader contracrtData={
+                {contractTitle: contractData.contractTitle,
+                  contractStatus: contractData.contractStatus  
+                }
+            } />
 
             {/* Main Content */}
             <div className="mx-auto max-w-[1800px] px-4 py-6 lg:px-6">
@@ -61,7 +64,7 @@ const ClientContractPage = () => {
                         <PaymentOverview payment={contractData.payment} />
 
                         {/* Timeline */}
-                        <MilestoneTimeline milestonesData={contractData.milestones} contractId={contractId} setShowTost={setShowTost}/>
+                        <MilestoneTimeline milestonesData={contractData.milestones} contractId={contractId} setShowTost={setShowTost} />
 
                         {/* Bottom Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -44,10 +44,10 @@ const UserDropdown = ({ userData, handleLogout }) => {
   const profileRoute =
     role === "freelancer"
       ? "/freelancer_own_profile"
-      : "/client/profile";
+      : "/Client";
 
   const menuItems = [
-    { icon: <FiUser size={16} />, label: "Your profile", to: profileRoute, divider: false },
+    { icon: <FiUser size={16} />, label: "My Dashboard", to: profileRoute, divider: false },
     { icon: <FiTrendingUp size={16} />, label: "Stats and trends", to: "/stats", divider: false },
     { icon: <FiHeart size={16} />, label: "Account health", to: "/account-health", divider: true },
     { icon: <FiCreditCard size={16} />, label: "Membership plan", to: "/membership", divider: false },

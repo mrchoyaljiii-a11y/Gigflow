@@ -1,6 +1,6 @@
 const contractModel = require("../model/Contract/contract");
 const JObModel = require("../model/JobModel/Jobmodel");
-const BidModel =  require("../model/GigModel/GigModel");
+const BidModel = require("../model/GigModel/GigModel");
 const uploadToCloudinary = require("../utility/uploadToCloudinary");
 
 async function generateContractNumber() {
@@ -114,6 +114,39 @@ async function Handle_GetContractById(req, res) {
     }
 }
 
+async function Handle_GetAllContracts(req, res) {
+    try {
+
+        console.log("inside all contracts handler");
+
+        const userId = req.user._id;
+
+        const contracts = await contractModel.find({ clientId: userId }).populate('freelancerId', 'firstName  lastName  professionalTitle  country  state  email  experienceLevel freelanerSkills  languages linkedInLink  websitelink profileSummary  profileImage rate  hourlyRate workExperience  education professionalCategory  createdAt ') // Populate freelancer details;
+        if (!contracts) {
+            return res.status(404).json({
+                success: false,
+                message: "No contracts found for these clients"
+            });
+        }
+
+        // console.log("All contract", contracts);
+
+        res.status(200).json({
+            success: true,
+            contracts
+        });
+    }
+    catch (error) {
+        console.error("Error fetching on all contract:", error);
+        res.status(500).json({
+            success: false,
+            message: "Failed to fetch all contract",
+            error: error.message
+        });
+    }
+}
+
+
 async function Handle_create_milestone(req, res) {
     try {
         // console.log(req.body)
@@ -214,6 +247,7 @@ async function Handle_create_milestone(req, res) {
 
 }
 
+
 module.exports = {
-    Handle_CreateContract, Handle_GetContractById, Handle_create_milestone
+    Handle_CreateContract, Handle_GetContractById, Handle_create_milestone, Handle_GetAllContracts
 }

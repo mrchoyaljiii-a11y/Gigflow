@@ -9,7 +9,7 @@ export const createContract = async (contractData) => {
     return response.data;
 }
 
-// get contract
+// get a sepecific contract
 export const getContract = async (contractId) => {
 
     const response = await api.get(
@@ -19,6 +19,21 @@ export const getContract = async (contractId) => {
         throw new Error(response.data.message || "Failed to fetch contract");
     }
     return response.data.contract;
+};
+
+// get all contracts
+export const getAllContracts = async () => {
+
+    // console.log("API function called");
+
+    const response = await api.get("/api/contracts");
+
+    // console.log("all contracts response",response);
+
+    if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to fetch contracts");
+    }
+    return response.data.contracts;
 };
 
 // create milestone
@@ -45,5 +60,5 @@ export const getMilestone = async (contractId) => {
 
 // update the contract in jobmodel and in bid model
 export const updateContractID_jobmodel_bidmodel = async (contractId) => {
-    
+
 }

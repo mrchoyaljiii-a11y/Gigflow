@@ -16,7 +16,7 @@ import {
 
 import { CiCircleRemove } from "react-icons/ci";
 
-const ContractHeader = () => {
+const ContractHeader = ({contracrtData}) => {
 
   const navigate = useNavigate();
 
@@ -53,8 +53,8 @@ const ContractHeader = () => {
             {/* Contract Info */}
             <div>
               <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-bold tracking-tight text-white lg:text-3xl">
-                  E-Commerce Website Redesign
+                <h1 className="text-2xl font-bold tracking-tight text-white lg:text-3xl capitalize">
+                  {contracrtData.contractTitle}
                 </h1>
 
                 <div
@@ -69,10 +69,11 @@ const ContractHeader = () => {
                     ring-1
                     ring-emerald-300/30
                     backdrop-blur
+                    capitalize
                   "
                 >
                   <HiOutlineStatusOnline size={14} />
-                  Active
+                 {contracrtData.contractStatus}
                 </div>
               </div>
 

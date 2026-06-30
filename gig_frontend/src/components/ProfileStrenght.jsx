@@ -7,12 +7,18 @@ import {
 } from "react-icons/fi"
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
+import { useGetClientInfo } from '../hooks/Client_releted/useGetClientInfo';
 
 const ProfileStrenght = () => {
 
-    const { userData, loading, error } = useSelector(
-        (state) => state.userSlice
-    );
+    const {
+        data: clientData = {},
+        isLoading,
+        error: clientError,
+        isError,
+        refetch,
+
+    } = useGetClientInfo();
 
     const {
         firstName = "",
@@ -24,7 +30,7 @@ const ProfileStrenght = () => {
         experienceLevel = "",
         freelanerSkills = [],
         languages = [],
-        Links = [],
+        Links = {},
         ProfessionalSummary = "",
         profileImage = {},
         rate = "",
@@ -35,12 +41,20 @@ const ProfileStrenght = () => {
         userName = "",
         professionalCategory = "",
         portfolioProjects = [],
-    } = userData || {};
+        role = "",
+
+        // client data
+        clientSummary = "",
+        company = {},
+        hiringCategories=[],
+
+
+    } = clientData.user || {};
 
 
 
     const profilestrengthData = {
-        "Profile photo": Object.keys(profileImage).length > 0 ? true : false ? true : false,
+        // "Profile photo": Object.keys(profileImage).length > 0 ? true : false ? true : false,
         "Professional summary": ProfessionalSummary ? true : false,
         "Links": Links.length > 0 ? true : false,
         "Work experience": workExperience.length > 0 ? true : false,
@@ -49,27 +63,36 @@ const ProfileStrenght = () => {
         "Portfolio": portfolioProjects.length > 0 ? true : false
     }
 
+    const profilestrengthData_client = {
+        "Profile photo": Object.keys(profileImage).length > 0 ? true : false ? true : false,
+        "client summary": clientSummary ? true : false,
+        "Links": Object.keys(Links).length > 0 ? true : false,
+    }
+
+    const whichDataused = role === "freelancer" ? profilestrengthData : profilestrengthData_client;
+
+    console.log("role of user", role);
 
     const sortedProfileStrength = Object.entries(
-        profilestrengthData
+        whichDataused
     ).sort((a, b) => b[1] - a[1]);
 
     const missingFields = Object.entries(
-        profilestrengthData
+        whichDataused
     ).filter(([_, value]) => !value).map(([key]) => key);
 
     // PROFILE COMPLETION %
     const completedCount = Object.values(
-        profilestrengthData
+        whichDataused
     ).filter(Boolean).length;
 
-    const totalFields = Object.keys(profilestrengthData).length;
+    const totalFields = Object.keys(whichDataused).length;
 
     const profilePercentage = Math.round(
         (completedCount / totalFields) * 100
     );
     return (
-        <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-5">
+        <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
 
             <div className="flex items-center gap-2 mb-3 ">
 

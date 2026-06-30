@@ -5,3 +5,16 @@ export const getClient = async (clientId) => {
     const response = await api.get('/user/details');
     return response.data;
 };
+
+// register new user || sign up
+export const registerUser = async (userData) => {
+    try {
+        const res = await api.post('/api/auth/register', userData, { withCredentials: true });
+        return res.data; //backend response
+
+    }
+    catch (error) {
+        console.log("Backend error:", error.response.data);
+        return error.response?.data || { signup_error: ["Signup failed"] };
+    }
+};
