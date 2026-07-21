@@ -1,7 +1,7 @@
 const Notification = require("../model/notification/notification");
 const User_model = require("../model/UserModel/User_model");
 const jobModel = require("../model/JobModel/Jobmodel");
-const bidModel = require("../model/GigModel/GigModel");
+const bidModel = require("../model/BidModel/BidModel");
 const { getIO } = require("../Socket/socket");
 
 // get All notifications for logged-in user

@@ -42,6 +42,21 @@ const files = [
     size: "1.9 MB",
     uploaded: "Yesterday",
   },
+  {
+    id: 4,
+    name: "LandingPage.png",
+    type: "image",
+    size: "1.9 MB",
+    uploaded: "Yesterday",
+  },
+
+  {
+    id: 4,
+    name: "LandingPage.png",
+    type: "image",
+    size: "1.9 MB",
+    uploaded: "Yesterday",
+  },
 ];
 
 const getIcon = (type) => {
@@ -72,6 +87,8 @@ const DeliverablesCard = () => {
         transition-all
         duration-300
         hover:shadow-xl
+        min-h-200
+        
       "
     >
       {/* Header */}
@@ -90,9 +107,10 @@ const DeliverablesCard = () => {
         </div>
       </div>
 
-      <div className="p-4">
+      <div className="p-4  max-h-200
+        overflow-auto">
         {/* Files */}
-        <div className="mt-8 space-y-4">
+        <div className="mt-1 space-y-4 ">
           {files.map((file) => (
             <div
               key={file.id}

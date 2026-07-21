@@ -1,9 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createMilestone } from "../api/contractAPI";
-import { getContract } from '../api/contractAPI'
+import { createMilestone } from "../../../api/contractAPI";
+import { getContract } from '../../../api/contractAPI';
 
 export const useCreateMilestone = (contractId) => {
-     const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
+    
     return useMutation({
         mutationFn: createMilestone,
         onError: (error) => {

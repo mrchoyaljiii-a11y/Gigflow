@@ -108,7 +108,7 @@ const iconMap = {
 
 const ActivityFeed = () => {
   return (
-    <div className="rounded-3xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:shadow-xl">
+    <div className="rounded-3xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:shadow-xl min-h-200">
       {/* Header */}
 
       <div className="border-b border-slate-100 p-7">
@@ -146,16 +146,17 @@ const ActivityFeed = () => {
       <div className="relative p-7">
         {/* Vertical Line */}
 
-        <div className="absolute left-[42px] top-0 bottom-0 w-[2px] bg-slate-200" />
+        <div className="absolute left-[42px] top-0 bottom-0 w-[2px] bg-slate-200 " />
 
-        <div className="space-y-7">
+        <div className="space-y-7 max-h-200
+        overflow-auto">
           {activities.map((item) => {
             const config = iconMap[item.type];
 
             return (
               <div
                 key={item.id}
-                className="group relative flex gap-5"
+                className="group relative flex gap-5 "
               >
                 {/* Timeline Icon */}
 
@@ -298,44 +299,10 @@ const ActivityFeed = () => {
                     </button>
                   </div>
                 </div>
+
               </div>
             );
           })}
-        </div>
-      </div>
-
-      {/* Footer Summary */}
-
-      <div className="border-t border-slate-100 bg-slate-50 p-6">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="rounded-full bg-green-100 p-2">
-              <FiCheckCircle
-                className="text-green-600"
-                size={18}
-              />
-            </div>
-
-            <div>
-              <p className="font-semibold text-slate-700">
-                Contract Status
-              </p>
-
-              <p className="text-sm text-slate-500">
-                Everything is progressing as expected.
-              </p>
-            </div>
-          </div>
-
-          <div className="rounded-xl bg-white px-5 py-3 shadow-sm border border-slate-200">
-            <span className="text-sm text-slate-500">
-              Last Updated
-            </span>
-
-            <p className="font-semibold text-slate-800">
-              10 minutes ago
-            </p>
-          </div>
         </div>
       </div>
     </div>

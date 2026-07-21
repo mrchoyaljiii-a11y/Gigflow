@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux'
-import Pagination from './Pagination';
-import { setPageNo } from '../redux/slices/job_slice.js';
+import Pagination from '../../../components/Pagination.jsx';
+import { setPageNo } from '../../../redux/slices/job_slice.js';
 
 //  ! icons
 import { MdKeyboardArrowLeft, MdKeyboardArrowRight, MdVerified } from "react-icons/md";
@@ -272,7 +272,7 @@ const Job_section = () => {
 
       {/* Pagination */}
       <div className="col-span-1 xl:col-span-2 flex justify-center">
-        <Pagination totalPages={playLoad?.totalPages} page={page} setPage={setPage} />
+        <Pagination totalPages={playLoad?.totalPages} page={page} setPage={setPage}/>
       </div>
 
     </div>

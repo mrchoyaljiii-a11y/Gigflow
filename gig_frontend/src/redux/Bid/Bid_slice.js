@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../api/axios'
 
-//submit the bid by the freelancer
+//submit the bid by the freelancer || replaced by query
 export const AddBid = createAsyncThunk('Bid/AddBid', async (BidData, { rejectWithValue }) => {
 
     try {
@@ -18,7 +18,7 @@ export const AddBid = createAsyncThunk('Bid/AddBid', async (BidData, { rejectWit
 });
 
 
-// get the bid by GigId
+// get the bid by GigId 
 export const GetBid = createAsyncThunk('Bid/GetBid', async (GigId, { rejectWithValue }) => {
     try {
         const res = await api.get(`/api/bid/${GigId}`, { withCredentials: true });
@@ -33,7 +33,7 @@ export const GetBid = createAsyncThunk('Bid/GetBid', async (GigId, { rejectWithV
     }
 });
 
-// get the all bids
+// get the all bids 
 export const GetAllBids = createAsyncThunk('Bid/GetAllBids', async (_, { rejectWithValue }) => {
     try {
         const res = await api.get("/api/bids", { withCredentials: true });

@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import api from '../../api/axios'
 
-// submit the hired info 
+// submit the hired info || replaced by query 
 const SubmitHired = createAsyncThunk(
     'hired/SubmitHired',
     async (hiredData, { rejectWithValue }) => {
@@ -18,7 +18,7 @@ const SubmitHired = createAsyncThunk(
     }
 );
 
-// get the hired info for a job
+// get the hired info for a job || replaced by query
 const GetHiredJOb = createAsyncThunk(
     'hired/GetHiredJOb',
     async (jobId, { rejectWithValue }) => {

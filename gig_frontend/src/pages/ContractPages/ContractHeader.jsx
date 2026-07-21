@@ -45,7 +45,7 @@ const ContractHeader = ({contracrtData}) => {
                 hover:bg-white/20
                 hover:shadow-lg
               "
-           onClick={() => navigate("/home")}
+           onClick={() => navigate(-1)}
             >
               <HiArrowLeft size={22} />
             </button>

@@ -1459,7 +1459,7 @@ const Profile_section = () => {
         experienceLevel = "",
         freelanerSkills = [],
         languages = [],
-        Links = [],
+        Links = {},
         ProfessionalSummary = "",
         profileImage = {},
         rate = "",
@@ -1622,7 +1622,7 @@ const Profile_section = () => {
                     openExtraInfoModel ? (<AddExtra_info actionType={actionType} setOpenExtraInfoModel={setOpenExtraInfoModel} />) : (
 
                         <div className="profile_section_main">
-                          
+
                             {/* Hero Section */}
                             <div
                                 className="hero_section bg-cover bg-center relative overflow-hidden"
@@ -1911,56 +1911,53 @@ const Profile_section = () => {
                                             </div>
 
                                             {/* Link list */}
-                                            <div className="space-y-5">
-
-                                                {Links.length === 0 ? (
-                                                    <div className="flex items-center gap-4">
-                                                        <div>
-                                                            <h3 className="text-lg font-semibold text-slate-800">
-                                                                No links added.
-                                                            </h3>
-                                                            <button className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all cursor-pointer"
-                                                                onClick={() => {
-                                                                    setActionType("AddLinks")
-                                                                    setOpenExtraInfoModel(true)
-                                                                }}>
-                                                                <FiPlus size={18} />
-                                                                Add Links
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )
-
-                                                    : (Links || []).map((link, index) => (
+                                            <div className="space-y-4">
+                                                {Object.entries(Links || {}).map(([key, value]) => {
+                                                    const label =
+                                                        key === "websiteLink"
+                                                            ? "Website"
+                                                            : key === "linkedInLink"
+                                                                ? "LinkedIn"
+                                                                : key;
+                                                    return (
                                                         <div
-                                                            key={index}
-                                                            className="flex items-center gap-4"
+                                                            key={key}
+                                                            className="p-4 border border-slate-200 rounded-2xl"
                                                         >
-                                                            {/* content */}
-                                                            <div className="flex gap-0.5 items-center">
-                                                                <h3 className="text-lg font-semibold text-slate-800">
-                                                                    {Object.keys(link).map((key) => (
-                                                                        <div key={key}>
-                                                                            <h3 className="text-lg font-semibold text-slate-800">
-                                                                                {key}
-                                                                            </h3>
+                                                            <p className="text-sm text-slate-500 mb-1">
+                                                                {label}
+                                                            </p>
 
-                                                                            <a
-                                                                                href={link[key]}
-                                                                                target="_blank"
-                                                                                rel="noopener noreferrer"
-                                                                                className="text-sm text-blue-600 hover:text-blue-700 hover:underline font-medium break-all"
-                                                                            >
-                                                                                {link[key]}
-                                                                            </a>
+                                                            {value ? (
+                                                                <a
+                                                                    href={value}
+                                                                    target="_blank"
+                                                                    rel="noopener noreferrer"
+                                                                    className="text-blue-600 hover:text-blue-700 hover:underline break-all"
+                                                                >
+                                                                    {value}
+                                                                </a>
+                                                            ) : (
+                                                                <div>
+                                                                    <p className="text-sm text-slate-400 italic">
+                                                                        {label} is not added yet!
+                                                                    </p>
 
-                                                                        </div>
-                                                                    ))}
-                                                                </h3>
-                                                            </div>
+                                                                    <button
+                                                                        className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all cursor-pointer"
+                                                                        onClick={() => {
+                                                                            setActionType("AddLinks");
+                                                                            setOpenExtraInfoModel(true);
+                                                                        }}
+                                                                    >
+                                                                        <FiPlus size={18} />
+                                                                        Add Links
+                                                                    </button>
+                                                                </div>
+                                                            )}
                                                         </div>
-                                                    ))}
-
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     </div>

@@ -7,6 +7,7 @@ import hired_slice from './hired_freelancer/hired_freelancer.js'
 import userSlice from './getUser/User.js'
 import Notification_actions_slice from './Notification_actions/Notifications_actions.js'
 import freelancerPortfolioSlice from './freelancer_extra_info/Freelancer_extra_info.js'
+import ShowToastSlice from './ShowTost/ShowToastSlice.js'
 export const store = configureStore({
   reducer: {
     job: jobReducer,
@@ -17,7 +18,8 @@ export const store = configureStore({
     userSlice: userSlice,
     Notification_actions_slice: Notification_actions_slice,
     freelancerPortfolioSlice: freelancerPortfolioSlice,
+    Showtoast:ShowToastSlice
   },
-})
+});
 
 

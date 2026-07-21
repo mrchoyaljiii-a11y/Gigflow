@@ -6,7 +6,7 @@ export const useGetClientInfo = () => {
 
     return useQuery({
 
-        queryKey: ["user"],
+        queryKey: ["clientInfo"],
 
         queryFn: () => getClient(),
 

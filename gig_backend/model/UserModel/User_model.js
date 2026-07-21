@@ -62,6 +62,7 @@ const UserSchema = new mongoose.Schema(
     },
 
     company: {
+      
       name: {
         type: String,
         trim: true,
@@ -76,6 +77,12 @@ const UserSchema = new mongoose.Schema(
         type: String,
         trim: true,
       },
+      
+      industryType: {
+        type: String,
+        trim: true,
+      },
+
     },
 
     Links: {
@@ -95,67 +102,6 @@ const UserSchema = new mongoose.Schema(
       default: [],
     },
 
-    // FREELANCER
-
-    professionalTitle: {
-      type: String,
-      trim: true,
-      lowercase: true,
-    },
-
-    professionalCategory: {
-      type: String,
-      trim: true,
-      lowercase: true,
-    },
-
-    experienceLevel: {
-      type: String,
-      trim: true,
-      lowercase: true,
-    },
-
-    freelanerSkills: {
-      type: [String],
-      default: [],
-    },
-
-    freelancerSummary: {
-      type: String,
-      trim: true,
-    },
-
-    hourlyRate: {
-      type: Number,
-      default: 0,
-    },
-
-    workExperience: {
-      type: [
-        {
-          company: String,
-          role: String,
-          startDate: Date,
-          endDate: Date,
-          description: String,
-        },
-      ],
-      default: [],
-    },
-
-    education: {
-      type: [
-        {
-          school: String,
-          degree: String,
-          fieldOfStudy: String,
-          startDate: Date,
-          endDate: Date,
-        },
-      ],
-      default: [],
-    },
-
     // AUTH
 
     email: {
@@ -166,10 +112,19 @@ const UserSchema = new mongoose.Schema(
       lowercase: true,
     },
 
-    PhoneNo: {
-      type: Number,
-      min: 10,
-      max: 10,
+    phoneNo: {
+     countryCode: {
+        type: String,
+        trim: true,
+      },
+
+      number: {
+        type: String,
+        trim: true,
+        minlength: 10,
+        maxlength: 10,
+        pattern: /^[0-9]{10}$/,
+     }
     },
 
     password: {
@@ -183,48 +138,6 @@ const UserSchema = new mongoose.Schema(
       public_id: String,
     },
 
-    // PORTFOLIO for freelancer
-
-    portfolioProjects: [
-      {
-        project_title: {
-          type: String,
-          trim: true,
-          lowercase: true,
-          required: true,
-        },
-
-        role_in_portfolio_project: {
-          type: String,
-          trim: true,
-          lowercase: true,
-        },
-
-        portfolio_project_description: {
-          type: String,
-          trim: true,
-          lowercase: true,
-          required: true,
-        },
-
-        skills_and_deliverables_of_portfolio_project: {
-          type: [String],
-          default: [],
-        },
-
-        Portfolio_images: [
-          {
-            public_id: String,
-            secure_url: String,
-          },
-        ],
-
-        portfolio_created_at: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
   },
   {
     timestamps: true,

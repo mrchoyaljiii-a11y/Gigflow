@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { Handle_CreateContract, Handle_GetContractById, Handle_create_milestone, Handle_GetAllContracts } = require("../../controllers/Contract_creation");
+const { Handle_HireFreelancer_CreateContract, Handle_GetContractById, Handle_create_milestone, Handle_GetAllContracts,
+    Handle_milestone_Actions,Handle_UploadWork
+} = require("../../controllers/Contract_creation");
 const authMiddleware = require('../../middlewares/authMiddleware');
 
 const multer = require("multer");
@@ -13,7 +15,7 @@ const upload = multer({
     },
 });
 
-router.post('/api/contract/create', authMiddleware, Handle_CreateContract);
+router.post('/api/contract/create', authMiddleware, Handle_HireFreelancer_CreateContract);
 
 // get sepecific contract
 router.get('/api/contracts/:contractId',
@@ -32,7 +34,7 @@ router.get(
 router.post(
     '/api/milestone/create',
     authMiddleware,
-    upload.array('attachments', 5),
+    upload.array('ClientAttachments', 5),
     (req, res, next) => {
 
         const totalSize = req.files.reduce(
@@ -54,5 +56,11 @@ router.post(
     },
     Handle_create_milestone
 );
+
+// accept the milestone
+router.put('/api/milestone/actions', authMiddleware, Handle_milestone_Actions);
+
+//upload work by freelancer 
+router.post('/api/milestone/upload_Freelancer_Work', authMiddleware, upload.array('FreelancerAttachments'), Handle_UploadWork);
 
 module.exports = router;

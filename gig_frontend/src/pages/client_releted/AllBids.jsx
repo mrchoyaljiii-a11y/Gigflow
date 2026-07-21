@@ -5,12 +5,10 @@ import { IoIosArrowDown } from "react-icons/io";
 import { NavLink, useParams, useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { UpdateJob } from '../../redux/slices/job_slice.js';
-import { SubmitHired } from '../../redux/hired_freelancer/hired_freelancer.js';
-import { GetHiredJOb } from '../../redux/hired_freelancer/hired_freelancer.js';
 import { UpdateBidStatus, IncrementBidView, GetBidsByFreelancer } from '../../redux/Bid/Bid_slice.js';
 import { HandleView } from "../../redux/Notification_actions/Notifications_actions.js";
-
-import { useCreateContract } from '../../hooks/useCreateContract.js';
+import { useCreateContract } from '../../hooks/contract_releted/useCreateContract.js';
+import { useGetHiredRecord } from "../../hooks/Hired_records_releted/useGetHiredRecord.js";
 
 const ConfirmHire = ({
     setOpenModel,
@@ -78,7 +76,7 @@ const ConfirmHire = ({
                                     <p className="font-semibold text-green-600">${project?.agreedPrice}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-slate-500">Timeline</p>
+                                    <p className="text-sm text-slate-500">Deleverd In</p>
                                     <p className="font-medium">{project?.timeline || "Not specified"}</p>
                                 </div>
                                 <div>
@@ -157,9 +155,11 @@ const AllBids = () => {
 
     const { gig_id } = useParams();
 
+    console.log("gig_id", gig_id);
+
     const nevigate = useNavigate();
 
-
+    
     //  React Query mutation for contract creation
     const {
         mutateAsync: createContract,
@@ -167,14 +167,15 @@ const AllBids = () => {
     } = useCreateContract();
 
 
-    useEffect(() => {
-        dispatch(GetHiredJOb(gig_id));
-        // dispatch()
-    }, [gig_id, dispatch]);
+    // 
+    const {
+        data: hiredRecord,
+        isLoading,
+        isError,
+    } = useGetHiredRecord(gig_id);
 
-    const hiredData = useSelector(state => state.hired_slice.data);
-
-    // console.log("hired data ", hiredData);
+    console.log("hired record", hiredRecord);
+    
 
     const [openBid, setOpenBid] = useState(null);
 
@@ -192,7 +193,7 @@ const AllBids = () => {
         (job) => job._id === gig_id
     );
 
-    console.log("filtered_job", filtered_job)
+    // console.log("filtered_job", filtered_job)
 
     const { AllBids, loading, error } = useSelector(
         (state) => state.BidSlice
@@ -215,7 +216,7 @@ const AllBids = () => {
         const freelancerId = bidItem.freelancerId._id;
 
         const freelancerName =
-            `${bidItem.freelancerId.firstName} ${bidItem.freelancerId.lastName}`;
+            `${bidItem.freelancerId?.firstName} ${bidItem.freelancerId?.lastName}`;
 
         try {
 
@@ -226,41 +227,15 @@ const AllBids = () => {
                 freelancerId
             });
 
-            await dispatch(
-                UpdateJob({
-                    gigId: gig_id,
-                    status: "assigned",
-                    freelancerId
-                })
-            ).unwrap();
 
-            await dispatch(
-                SubmitHired({
-                    jobId: gig_id,
-                    freelancerId,
-                    freelancerName,
-                    bidId: bidItem._id,
-                    clientid: bidItem.clientId,
-                    clientCompanyName:
-                        filtered_job[0]?.clientId?.company?.name,
-                    clientName:
-                        `${filtered_job[0]?.clientId?.firstName}
-                    ${filtered_job[0]?.clientId?.lastName}`,
-                    agreedPrice: bidItem.bid,
-                    gigName: filtered_job[0]?.jobtitle,
-                    hiredStatus: "hired",
-                    contractType: filtered_job[0]?.BudgetType,
-                })
-            ).unwrap();
-
-            //create contract for the hired freelancer
+            //create contract and hired record for the hired freelancer
             const result = await createContract({
                 jobId: gig_id,
                 bidId: bidItem._id,
                 freelancerId,
                 clientCompanyName: filtered_job[0]?.clientId?.company?.name,
                 agreedPrice: bidItem.bid,
-                timeline: bidItem.timeline,
+                DeleveryDate: bidItem.Delivery_date,
                 gigName: filtered_job[0]?.jobtitle,
                 contractType: filtered_job[0]?.BudgetType,
             });
@@ -313,8 +288,8 @@ const AllBids = () => {
         return <p className="text-center mt-10">Loading bids...</p>;
     }
 
-    if (!hiredData) {
-        // return <p className="text-center text-red-500 mt-10 text-4xl">loading...</p>;
+    if (!hiredRecord) {
+        return <p className="text-center text-red-500 mt-10 text-4xl">loading Hired records...</p>;
     }
 
     return (
@@ -329,7 +304,7 @@ const AllBids = () => {
                         hireLoading={contractCreating}
                         freelancer={{
                             name:
-                                `${selectedBid.bidItem.freelancerId.firstName}
+                                `${selectedBid.bidItem.freelancerId?.firstName}
                          ${selectedBid.bidItem.freelancerId.lastName}`,
 
                             avatar:
@@ -341,7 +316,7 @@ const AllBids = () => {
                             jobtitle: filtered_job[0]?.jobtitle,
                             budget: filtered_job[0]?.budget,
                             agreedPrice: selectedBid.bidItem.bid,
-                            timeline: selectedBid.bidItem.timeline
+                            timeline: `${selectedBid.bidItem.Delivery_date.deliveryTime} ${selectedBid.bidItem.Delivery_date.deliveryUnit}`,
                         }}
                     />
                 )
@@ -407,13 +382,17 @@ const AllBids = () => {
             {/* Bid Cards */}
             <div className="space-y-4">
                 {Bids_of_gig.map((bidItem, index) => {
-                    const { bid, timeline = "", description = "", freelancerId = {}, _id = "" } = bidItem;
-                    console.log("bidItem", bidItem);
+
+                    const { bid, Delivery_date :{deliveryTime, deliveryUnit}, description = "", freelancerId = {}, _id = "" } = bidItem;
+
+                    // console.log("bidItem", bidItem);
                     // console.log("freelancerId", freelancerId._id);
-                    const hiredFreelancerId = hiredData?.freelancerId?._id || hired.freelancerId || null;
+                    const hiredFreelancerId = hiredRecord?.freelancerId?._id || hired.freelancerId || null;
 
                     const isHired = hiredFreelancerId === freelancerId?._id;
                     const someoneHired = Boolean(hiredFreelancerId);
+
+                    const freelancerInitials = `${freelancerId?.firstName?.[0] || ""}${freelancerId?.lastName?.[0] || ""}`.toUpperCase();
 
                     return (
                         <div
@@ -424,16 +403,18 @@ const AllBids = () => {
 
                                 {/* Freelancer */}
                                 <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center font-semibold text-blue-600">
-                                        {`${freelancerId}`}
+                                    <div className="w-18 h-18 rounded-full bg-blue-100 flex items-center justify-center font-semibold text-blue-600">
+                                        <img src={freelancerId?.profileImage?.url} alt={freelancerInitials} 
+                                        className="w-full h-full rounded-full object-cover"
+                                        />
                                     </div>
 
                                     <div>
-                                        <p className="font-semibold text-slate-800">
-                                            {`${freelancerId.firstName} ${freelancerId.lastName}`}
+                                        <p className="font-semibold text-slate-800 capitalize text-[1rem]">
+                                            {`${freelancerId?.firstName} ${freelancerId?.lastName}`}
                                         </p>
 
-                                        <p className="font-semibold text-slate-800">
+                                        <p className="font-semibold text-slate-800 capitalize text-sm ">
                                             {`${freelancerId.country} ${freelancerId.state}`}
                                         </p>
                                         <p className="text-xs text-slate-500">
@@ -444,11 +425,11 @@ const AllBids = () => {
 
                                 {/* Bid */}
                                 <div>
-                                    <p className="text-lg font-semibold text-primary">
+                                    <p className="text-[1.2rem] font-semibold text-primary">
                                         ${bid}
                                     </p>
-                                    <p className="text-xs text-slate-500">
-                                        time line: {timeline}
+                                    <p className="text-[0.9rem] text-slate-500 capitalize">
+                                        Deliverd In: {`${deliveryTime} ${deliveryUnit}`}
                                     </p>
                                 </div>
 
@@ -471,7 +452,6 @@ const AllBids = () => {
                                     >
                                         <IoIosArrowDown size={20} />
                                     </button>
-
 
                                     {/* hire btn */}
                                     <button

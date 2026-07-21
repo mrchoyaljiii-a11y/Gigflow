@@ -1,6 +1,5 @@
 import React from 'react'
 import Search_filters from '../components/Search_filters'
-import Job_section from '../components/Job_section'
 import { useSelector } from "react-redux";
 import ClientDashboard from '../pages/Navigation/Clients-Navigations/ClientDashboard.jsx';
 

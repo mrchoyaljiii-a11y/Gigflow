@@ -1,0 +1,35 @@
+.toast-enter {
+    animation: toastShow 0.35s ease-out forwards;
+}
+
+.toast-exit {
+    animation: toastHide 0.3s ease-in forwards;
+}
+
+@keyframes toastShow {
+    0% {
+        opacity: 0;
+        transform: translateX(80px);
+    }
+
+    70% {
+        transform: translateX(-8px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes toastHide {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateX(80px);
+    }
+}

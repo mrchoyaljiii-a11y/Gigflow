@@ -1,11 +1,7 @@
 import React from 'react'
 import {
-    FiDollarSign, FiBriefcase, FiStar, FiLayers, FiZap,
-    FiSend, FiFileText, FiTrendingUp, FiLink, FiActivity,
-    FiCheckCircle, FiCircle, FiChevronRight, FiMessageSquare,
-    FiAward, FiClock, FiMapPin, FiUser, FiEye
+    FiCheckCircle, FiCircle, FiArrowRight, FiUser
 } from "react-icons/fi"
-import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { useGetClientInfo } from '../hooks/Client_releted/useGetClientInfo';
 
@@ -91,90 +87,129 @@ const ProfileStrenght = () => {
     const profilePercentage = Math.round(
         (completedCount / totalFields) * 100
     );
+
+    // Ring geometry
+    const radius = 54;
+    const circumference = 2 * Math.PI * radius;
+    const dashOffset = circumference - (profilePercentage / 100) * circumference;
+
+    const ringColor =
+        profilePercentage === 100
+            ? "#10b981" // emerald-500
+            : profilePercentage >= 50
+            ? "#3b82f6" // blue-500
+            : "#f59e0b"; // amber-500
+
     return (
-        <div className="bg-white border border-gray-200 rounded-3xl p-8 shadow-sm">
+        <div className="bg-white border border-gray-200 rounded-3xl p-7 shadow-sm">
 
-            <div className="flex items-center gap-2 mb-3 ">
-
+            {/* Header */}
+            <div className="flex items-center gap-2.5 mb-6">
                 <div className="bg-blue-50 p-2 rounded-xl">
-                    <FiUser
-                        className="text-blue-500"
-                        size={18}
-                    />
+                    <FiUser className="text-blue-500" size={17} />
                 </div>
-
-                <h3 className="font-bold text-gray-900 text-sm">
+                <h3 className="font-bold text-gray-900 text-sm tracking-tight">
                     Profile strength
                 </h3>
             </div>
 
-            {/* PERCENTAGE */}
-            <div className="text-center mb-4">
+            {/* RING */}
+            <div className="flex flex-col items-center mb-7">
+                <div className="relative w-36 h-36">
+                    <svg
+                        viewBox="0 0 120 120"
+                        className="w-full h-full -rotate-90"
+                    >
+                        {/* Track */}
+                        <circle
+                            cx="60"
+                            cy="60"
+                            r={radius}
+                            fill="none"
+                            stroke="#f1f5f9"
+                            strokeWidth="10"
+                        />
+                        {/* Progress */}
+                        <circle
+                            cx="60"
+                            cy="60"
+                            r={radius}
+                            fill="none"
+                            stroke={ringColor}
+                            strokeWidth="10"
+                            strokeLinecap="round"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={dashOffset}
+                            style={{
+                                transition: "stroke-dashoffset 0.8s cubic-bezier(0.65, 0, 0.35, 1), stroke 0.5s ease",
+                            }}
+                        />
+                    </svg>
 
-                <p className="text-4xl font-bold text-blue-500">
-                    {profilePercentage}%
-                </p>
+                    {/* Center label */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-3xl font-bold text-gray-900 tabular-nums">
+                            {profilePercentage}
+                            <span className="text-base font-semibold text-gray-400">%</span>
+                        </span>
+                    </div>
+                </div>
 
-                <p className="text-xs text-gray-400 mt-1">
+                <p className="text-xs text-gray-400 mt-3 font-medium">
                     {missingFields.length === 0
                         ? "Profile completed"
-                        : `${missingFields.length} items missing`}
+                        : `${missingFields.length} item${missingFields.length > 1 ? "s" : ""} missing`}
                 </p>
-
             </div>
 
             {/* FIELDS */}
-            <div className="space-y-2.5">
-
+            <div className="space-y-1">
                 {sortedProfileStrength.map(
                     ([key, value]) => (
-
                         <div
                             key={key}
-                            className="flex items-center gap-2.5 text-xs"
+                            className={`flex items-center gap-2.5 text-xs px-3 py-2 rounded-xl transition-colors ${
+                                value ? "" : "bg-amber-50/60"
+                            }`}
                         >
-
                             {value ? (
-
                                 <FiCheckCircle
-                                    size={14}
+                                    size={15}
                                     className="text-emerald-500 flex-shrink-0"
                                 />
-
                             ) : (
-
                                 <FiCircle
-                                    size={14}
+                                    size={15}
                                     className="text-amber-500 flex-shrink-0"
                                 />
-
                             )}
 
                             <span
                                 className={
                                     value
-                                        ? "text-gray-600"
-                                        : "text-amber-600 font-medium"
+                                        ? "text-gray-500"
+                                        : "text-amber-700 font-semibold"
                                 }
                             >
                                 {key}
                             </span>
-
                         </div>
                     )
                 )}
-
             </div>
 
             {/* BUTTON */}
             {missingFields.length > 0 && (
-
-                <NavLink to={`/freelancer_own_profile`} className="w-full mt-4 text-sm font-semibold py-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100 transition-colors flex items-center justify-center">
-
-                    Complete : {missingFields[0]}
-
+                <NavLink
+                    to={`/freelancer_own_profile`}
+                    className="group w-full mt-5 text-sm font-semibold py-3 rounded-2xl bg-gray-900 text-white hover:bg-gray-800 transition-colors flex items-center justify-center gap-2"
+                >
+                    Complete: {missingFields[0]}
+                    <FiArrowRight
+                        size={15}
+                        className="transition-transform group-hover:translate-x-0.5"
+                    />
                 </NavLink>
-
             )}
 
         </div>

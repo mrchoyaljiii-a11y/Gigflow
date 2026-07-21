@@ -17,7 +17,9 @@ import "./style/App.css";
 
 
 import Layout from "./components/Layout";
+// ShowToast
 
+import ShowToast from './components/Toasts/ShowToast.jsx';
 
 import First_page from "./pages/Initial_page/First_page.jsx";
 import Login from "./pages/Authntications/Login.jsx";
@@ -48,7 +50,7 @@ import ClientDashboard from "./pages/Navigation/Clients-Navigations/ClientDashbo
 import Freelancer_page from "./pages/Navigation/Clients-Navigations/Freelancer_page.jsx";
 import View_freelancer_profile from "./pages/freelancer_releted/View_freelancer_profile.jsx";
 import Search_filters from "./components/Search_filters.jsx";
-import Job_section from "./components/Job_section.jsx";
+import Job_section from "./pages/Navigation/Freelancers-Navigations/Job_section.jsx";
 
 import Myproposals from "./pages/Navigation/Freelancers-Navigations/Myproposals.jsx";
 import Detailed_bid from "./pages/freelancer_releted/Detailed_bid.jsx";
@@ -71,7 +73,13 @@ import Client_Dashboard_layout from "./pages/Navigation/Clients-Navigations/clie
 import Client_Dashboard from "./pages/Navigation/Clients-Navigations/client-profile/Client_Dashboard.jsx";
 import Client_contracts from "./pages/Navigation/Clients-Navigations/client-profile/Client_contracts.jsx";
 import Client_MYprofile from './pages/Navigation/Clients-Navigations/client-profile/Client_MYprofile.jsx';
+import Error_componet from './components/Error_componet.jsx';
+
 const router = createBrowserRouter([
+  {
+    path: "*",
+    element: <Error_componet type="404" />
+  },
   /*  PUBLIC LANDING PAGE */
   {
     path: "/",
@@ -118,23 +126,24 @@ const router = createBrowserRouter([
     path: '/Client',
     element: (<Second_Layout />
     ),
+
     children: [
       {
         path: '',
-        element: (<Client_Dashboard_layout/>),
+        element: (<Client_Dashboard_layout />),
         children: [
           {
 
             index: true,
-            element: (<Client_Dashboard/>)
+            element: (<Client_Dashboard />)
           },
           {
-            path:"/Client/Contracts",
-            element:<Client_contracts/>
+            path: "/Client/Contracts",
+            element: <Client_contracts />
           },
           {
-            path:"/Client/MyProfile",
-            element:<Client_MYprofile/>
+            path: "/Client/MyProfile",
+            element: <Client_MYprofile />
           }
         ]
       },
@@ -149,6 +158,7 @@ const router = createBrowserRouter([
         <Layout />
       </ProtectedRoute>
     ),
+
     children: [
       {
         path: "",
@@ -165,7 +175,7 @@ const router = createBrowserRouter([
       },
       {
         path: "Find_freelancers",
-        element: <Freelancer_page/>,
+        element: <Freelancer_page />,
       },
       {
         path: "detailed_gig/:id",
@@ -308,7 +318,12 @@ function App() {
 
   }, [user?._id]);
 
-  return <RouterProvider router={router} />;
+ return (
+  <>
+    <RouterProvider router={router} />
+    <ShowToast />
+  </>
+);
 }
 
 export default App;

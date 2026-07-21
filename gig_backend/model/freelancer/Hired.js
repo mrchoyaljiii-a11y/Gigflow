@@ -20,7 +20,7 @@ const HiredSchema = new Schema({
     },
     freelancerId: {
         type: Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Freelancer",
         required: true
     },
     clientCompanyName: {

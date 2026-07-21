@@ -30,7 +30,7 @@ async function Handle_Addjob(req, res) {
         console.log("Received file:", file);
         console.log("Received job data:", jobData);
 
-        const { jobtitle, projectCategory, BudgetType, experiance, Budget, timeline, skills, jobDescription, status } = jobData;
+        const { jobtitle, projectCategory, BudgetType, experiance, Budget, Project_Duration, skills, jobDescription, status } = jobData;
 
         console.log("Received job data:", jobData);
 
@@ -39,7 +39,7 @@ async function Handle_Addjob(req, res) {
             projectCategory,
             BudgetType,
             experiance,
-            timeline,
+            Project_Duration:JSON.parse(Project_Duration),
             jobDescription,
             Budget,
             skills: JSON.parse(skills),
@@ -58,7 +58,10 @@ async function Handle_Addjob(req, res) {
     }
     catch (error) {
         console.log("Error in Handle_Addjob:", error);
-        res.status(500).send("Internal Server Error from Handle_Addjob");
+       return res.status(500).json({
+            success: false,
+            message: "Internal Server Error while adding the job"
+        });
     }
 }
 
@@ -122,7 +125,7 @@ async function Handle_Getjob(req, res) {
 async function Handle_GetClientsJobs(req, res) {
     try {
         const AuthenticatedClientID = req.user._id;
-        const Clientjobs = await jobModel.find({ clientId: AuthenticatedClientID }).sort({ createdAt: -1 }).populate("clientId", "firstName lastName company profileImage email country state");
+        const Clientjobs = await jobModel.find({ clientId: AuthenticatedClientID }).sort({ createdAt: 1 }).populate("clientId", "firstName lastName company profileImage email country state");
         return res.json({
             success: true,
             Clientjobs: Clientjobs || [],

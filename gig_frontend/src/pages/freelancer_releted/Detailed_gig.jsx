@@ -20,8 +20,11 @@ import {
     FaUser,
     FaFileAlt,
     FaPaperPlane,
+    FaCalendarAlt
 } from "react-icons/fa";
 import { BsBriefcaseFill } from "react-icons/bs";
+
+import { useAddBid } from '../../hooks/Bid_releted/useAddBid.js'
 
 // ─── Section Wrapper ──────────────────────────────────────────────────────────
 const Section = ({ children }) => (
@@ -77,6 +80,9 @@ const FormField = ({ label, icon: Icon, error, children }) => (
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 const Detailed_gig = () => {
+
+    const { mutateAsync: addBid, isLoading: isAddingBid } = useAddBid();
+
     const [showMore, setShowMore] = useState(false);
 
     const { id } = useParams();
@@ -94,7 +100,9 @@ const Detailed_gig = () => {
 
     const onSubmit = async (data) => {
         const updatedData = { ...data, gigId: id };
-        await dispatch(AddBid(updatedData)).unwrap();
+        // await dispatch(AddBid(updatedData)).unwrap();
+        const res = await addBid(updatedData);
+        console.log("Bid submitted successfully:", res);
         reset();
     };
 
@@ -242,9 +250,9 @@ const Detailed_gig = () => {
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
 
                                             {[
-                                                { icon: FaBuilding, label: "Company", value: clientId.company },
-                                                { icon: MdOutlineEmail, label: "Email", value: clientId.email },
-                                                { icon: FaMapMarkerAlt, label: "Location", value: `${clientId.state}, ${clientId.country}` },
+                                                { icon: FaBuilding, label: "Company", value: clientId?.company?.name },
+                                                { icon: MdOutlineEmail, label: "Email", value: clientId?.email },
+                                                { icon: FaMapMarkerAlt, label: "Location", value: `${clientId?.state}, ${clientId?.country}` },
                                             ].map(({ icon: Icon, label, value }) => (
                                                 <div key={label} className="flex items-center gap-2.5 bg-slate-50 border border-slate-100 rounded-xl px-3 py-2">
                                                     <div className="w-6 h-6 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
@@ -354,30 +362,61 @@ const Detailed_gig = () => {
                                                 className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-medium text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-400 focus:bg-white outline-none transition-all disabled:bg-slate-100 disabled:cursor-not-allowed"
                                             />
                                         </div>
+
                                     </FormField>
 
-                                    {/* Timeline */}
-                                    <FormField
-                                        label="Delivery Timeline"
-                                        icon={FaClock}
-                                        error={errors.timeline?.message}
-                                    >
-                                        <div className="relative">
-                                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
-                                                <FaClock size={15} />
-                                            </span>
+                                    {/* Delivary date */}
 
-                                            <input
-                                                type="text"
+                                    <FormField
+                                        label="Can Deliver In"
+                                        icon={FaCalendarAlt}
+                                        error={
+                                            errors.Delivery_date?.deliveryTime?.message ||
+                                            errors.Delivery_date?.deliveryUnit?.message
+                                        }
+                                    >
+                                        <div className="flex gap-3">
+                                            {/* Duration Value */}
+                                            <div className="relative flex-1">
+                                                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                                    <FaCalendarAlt size={15} />
+                                                </span>
+
+                                                <input
+                                                    type="number"
+                                                    min={1}
+                                                    placeholder="10"
+                                                    disabled={status === "assigned"}
+                                                    {...register("Delivery_date.deliveryTime", {
+                                                        required:
+                                                            status !== "assigned"
+                                                                ? "Delivery time is required"
+                                                                : false,
+                                                        min: {
+                                                            value: 1,
+                                                            message: "Duration must be at least 1",
+                                                        },
+                                                    })}
+                                                    className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-400 focus:bg-white outline-none transition-all disabled:bg-slate-100 disabled:cursor-not-allowed"
+                                                />
+                                            </div>
+
+                                            {/* Duration Unit */}
+                                            <select
                                                 disabled={status === "assigned"}
-                                                {...register("timeline", {
-                                                    required: status !== "assigned"
-                                                        ? "Timeline is required"
-                                                        : false,
+                                                {...register("Delivery_date.deliveryUnit", {
+                                                    required:
+                                                        status !== "assigned"
+                                                            ? "Please select a duration unit"
+                                                            : false,
                                                 })}
-                                                placeholder="E.g. 3 days, 2 weeks"
-                                                className="w-full pl-9 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-medium text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-400 focus:bg-white outline-none transition-all disabled:bg-slate-100 disabled:cursor-not-allowed"
-                                            />
+                                                className="w-36 px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-[13px] font-medium text-slate-800 focus:ring-2 focus:ring-blue-500 focus:border-blue-400 focus:bg-white outline-none transition-all disabled:bg-slate-100 disabled:cursor-not-allowed"
+                                            >
+                                                <option value="">Select</option>
+                                                <option value="days">Days</option>
+                                                <option value="weeks">Weeks</option>
+                                                <option value="months">Months</option>
+                                            </select>
                                         </div>
                                     </FormField>
 
@@ -450,6 +489,7 @@ const Detailed_gig = () => {
                                         )}
                                     </button>
                                 </form>
+
                             </div>
                         </div>
 

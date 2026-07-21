@@ -141,7 +141,7 @@ const Detailed_bid = () => {
                                                 <span className="material-symbols-outlined text-primary text-3xl"><MdCorporateFare /></span>
                                             </div>
                                             <div>
-                                                <h4 className="font-headline font-bold text-xl text-on-surface">{clientId.company}</h4>
+                                                <h4 className="font-headline font-bold text-xl text-on-surface">{"demo"}</h4>
                                                 <p className="text-on-surface-variant text-sm">{clientId.country}, {clientId.state}</p>
                                                 <div className="flex items-center gap-1 mt-1">
                                                     <span className="material-symbols-outlined text-yellow-500 text-sm">star</span>

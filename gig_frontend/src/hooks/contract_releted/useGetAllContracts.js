@@ -1,6 +1,6 @@
 // these hooks is used to get the contract detailed 
 import { useQuery } from "@tanstack/react-query";
-import { getAllContracts } from "../api/contractAPI";
+import { getAllContracts } from "../../api/contractAPI";
 
 export const useGetAllContracts = () => {
 

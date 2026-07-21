@@ -5,20 +5,30 @@ import { MdKeyboardArrowRight } from "react-icons/md";
 import { GetBid } from '../../../redux/Bid/Bid_slice.js'
 import { DeleteJob } from '../../../redux/slices/job_slice.js'
 import { GetClientsJobs } from '../../../redux/slices/job_slice.js'
+import { useGetJobs } from "../../../hooks/job_releted/useGetJobs.js";
 const MyGigs = () => {
+
+
+  const {
+    data: clientjobs = {},
+    isLoading: jobsLoading,
+    error: jobsError,
+    isError: jobsIsError,
+    refetch: jobsRefetch,
+  } = useGetJobs();
+
+
+  console.log("client jobs in client dashboard", clientjobs?.Clientjobs);
+
+  const jobs = clientjobs?.Clientjobs || [];
 
   const dispatch = useDispatch();
 
   const [filter, setFilter] = useState("all");
 
-  // all jobs/gigs 
-  const { Clientjobs, loading, error } = useSelector((state) => state.job);
-  // console.log("all jobs", Clientjobs);
-
-
   const getFilteredJobs = () => {
-    if (filter === "all") return Clientjobs;
-    return Clientjobs.filter(job => job.status === filter);
+    if (filter === "all") return jobs;
+    return jobs.filter((job) => job.status === filter);
   };
 
   // console.log("all jobs", getFilteredJobs().length);
@@ -31,13 +41,7 @@ const MyGigs = () => {
   const getBidCountByGig = (gigId) => {
     return AllBids.filter((bid) => bid.gigId === gigId).length;
   };
-  if (loading) {
-    return <p className="text-center mt-10">Loading gigs...</p>;
-  }
 
-  if (error) {
-    return <p className="text-center text-red-500 mt-10">{error}</p>;
-  }
 
   const HandleDispatchGigs = (GigId) => {
     dispatch(GetBid(GigId))
@@ -46,6 +50,18 @@ const MyGigs = () => {
   const handleCloseJob = (jobId) => {
     dispatch(DeleteJob(jobId))
     // console.log("job_id", job_id);
+  }
+
+  if (jobsLoading) {
+    return <p className="text-center mt-10">Loading gigs...</p>;
+  }
+
+  if (jobsIsError) {
+    return (
+      <p className="text-center text-red-500 mt-10">
+        {jobsError?.message || "Something went wrong"}
+      </p>
+    );
   }
 
   return (
@@ -118,29 +134,30 @@ const MyGigs = () => {
                   </div>
 
                   {/* left side in header */}
-                <div className="flex justify-between gap-3 items-center">
+
+                  <div className="flex justify-between gap-3 items-center">
                     {/* view Contract */}
-                  {
-                    status === "assigned" && contractId ? (
+                    {
+                      status === "assigned" && contractId ? (
                         <NavLink to={`/contracts/${contractId}`}>
                           <button className="text-primary border border-primary text-sm font-bold hover:bg-primary/10 transition-all px-3 py-1.5 rounded-2xl cursor-pointer">View Contract</button>
                         </NavLink>
-                    ) : ""
+                      ) : ""
 
-                  }
+                    }
 
-                  {/* close the job btn */}
-                  <button
-                    className="text-red-500 border border-red-400 text-sm font-bold hover:bg-red-500/10 transition-all px-3 py-1.5 rounded-2xl cursor-pointer capitalize"
-                    onClick={() => handleCloseJob(_id)}
-                  >
-                    close the job
-                  </button>
+                    {/* close the job btn */}
+                    <button
+                      className="text-red-500 border border-red-400 text-sm font-bold hover:bg-red-500/10 transition-all px-3 py-1.5 rounded-2xl cursor-pointer capitalize"
+                      onClick={() => handleCloseJob(_id)}
+                    >
+                      close the job
+                    </button>
 
-                  <span className={`text-sm px-3 py-1.5 rounded-full ${status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"} ${status === "assigned" ? "bg-yellow-100 text-yellow-700" : ""}`}>
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </span>
-                </div>
+                    <span className={`text-sm px-3 py-1.5 rounded-full ${status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"} ${status === "assigned" ? "bg-yellow-100 text-yellow-700" : ""}`}>
+                      {status.charAt(0).toUpperCase() + status.slice(1)}
+                    </span>
+                  </div>
 
                 </div>
 
@@ -205,7 +222,7 @@ const MyGigs = () => {
 
                 {/* View all Bids */}
 
-                <div className="view_all_bids text-center"
+                <div className="view_all_bids text-center border-primary border w-[10rem] mx-auto mt-4 py-2 rounded-lg cursor-pointer hover:bg-primary/10 transition-all duration-300"
                   onClick={() => HandleDispatchGigs(_id)}>
                   {/* to={`/job/${_id}`}  */}
                   <NavLink to={`/home/bids/${_id}`} className="view_all_bids text-primary font-semibold text-center">

@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { loginUser } from '../../redux/Auth/Auth'
 import { showToast } from '../../redux/Tost/Tost_slice'
 import { fetchUser } from '../../redux/getUser/User'
+
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     // const [loading, setLoading] = useState(false);
@@ -21,6 +22,7 @@ const Login = () => {
         setServerError(null);
         // setLoading(true);
         try {
+            // console.log("Login data:", data);
             const result = await dispatch(loginUser(data)).unwrap();
             console.log("Login result:", result);
             if (result.success) {

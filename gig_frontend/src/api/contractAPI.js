@@ -2,11 +2,15 @@ import api from "./axios";
 
 // create contract
 export const createContract = async (contractData) => {
-    const response = await api.post("/api/contract/create", contractData);
-    if (!response.data.success) {
-        throw new Error(response.data.message || "Failed to create contract");
+    try {
+        const response = await api.post("/api/contract/create", contractData);
+        return response.data;
+
+    } catch (error) {
+        throw new Error(
+            error?.response?.data?.message || error.message || "Failed to Hired freelancer and create contract"
+        );
     }
-    return response.data;
 }
 
 // get a sepecific contract
@@ -58,7 +62,23 @@ export const getMilestone = async (contractId) => {
     return response.data.milestone;
 };
 
-// update the contract in jobmodel and in bid model
-export const updateContractID_jobmodel_bidmodel = async (contractId) => {
+// Handle milestone action by freelancer like accept or reject , submit work etc...
+//milestoneAction caontain milestoneId and action
+export const HandleMilestoneAction = async (milestoneAction) =>
+{
+    const response = await api.put(`/api/milestone/actions`, milestoneAction);
+    if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to accept milestone");
+    }
+    return response.data;
+}
 
+// upload the work add by freelancer when submit milestone || when a milestone is completed by freelancer they upload their work in this function
+
+export const UploadWork = async (UploadData) => {
+    const response = await api.post("/api/milestone/upload_Freelancer_Work", UploadData);
+    if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to upload work by freelancer");
+    }
+    return response.data;
 }

@@ -8,34 +8,54 @@ const MilestoneSchema = new Schema({
         type: String,
         required: true
     },
+
     milestoneDescription: {
         type: String,
         required: true
     },
+
     milestoneAmount: {
         type: Number,
         required: true
     },
+
     milestoneDueDate: {
         type: Date,
         required: true
     },
 
+    // its a date when a freelancer accepts a milestone AND Due date is calculated from these date.
+
+    milestoneStartDate: {
+        type: Date,
+    },
+
+    milestoneSubmittedDate: {
+        type: Date,
+    },
+
+    milestoneApprovedDate: Date,
+
+    milestonePaidDate: Date,
+
+
     milestoneStatus: {
         type: String,
         enum: [
-            "pending",      // created but work not started
-            "in_progress",  // freelancer working
-            "submitted",    // freelancer submitted work
-            "approved",     // client approved
-            "released",     // payment released milestone complete
-            "cancelled",    // milestone cancelled
-            "disputed"      // dispute raised
+            "PENDING_ACCEPTANCE",      // created but work not started
+            "IN_PROGRESS",  // freelancer working
+            "SUBMITTED",    // freelancer submitted work
+            "APPROVED",     // client approved
+            "RELEASED",     // payment released milestone complete
+            "CANCELLED",    // milestone cancelled
+            "DISPUTE"      // dispute raised
         ],
-        default: "pending"
+        default: "PENDING_ACCEPTANCE"
     },
 
-    attachments: [Schema.Types.Mixed],
+    ClientAttachments: [Schema.Types.Mixed],
+    FreelancerAttachments: [Schema.Types.Mixed],
+
 
     createdAt: {
         type: Date,
@@ -82,7 +102,7 @@ const ContractSchema = new Schema({
     },
     freelancerId: {
         type: Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Freelancer",
         required: true
     },
     clientId: {

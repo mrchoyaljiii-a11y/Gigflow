@@ -12,7 +12,7 @@ end point are different api is same
  */
 
 
-//add the job
+//add the job || replaced by query
 export const Addjob = createAsyncThunk('job/Addjob', async (jobData, { rejectWithValue }) => {
 
     try {
@@ -64,9 +64,7 @@ export const UpdateJob = createAsyncThunk('job/UpdateJob', async (jobData, { rej
     try {
         // console.log("whole data in slice", jobData)
         const gig_id = jobData.gigId;
-        const res = await api.patch(`/api/gigs/${gig_id}`,
-            jobData,
-            jobData, { withCredentials: true });
+        const res = await api.patch(`/api/gigs/${gig_id}`,jobData, { withCredentials: true });
         return res.data;
     } catch (error) {
         console.log("from updating a job status", error);

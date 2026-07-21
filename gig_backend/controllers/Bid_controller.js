@@ -1,4 +1,4 @@
-const BidModel = require('../model/GigModel/GigModel');
+const BidModel = require('../model/BidModel/BidModel');
 const JobModel = require('../model/JobModel/Jobmodel');
 const mongoose = require('mongoose');
 const Notification = require("../model/notification/notification");
@@ -8,12 +8,13 @@ const { getIO } = require("../Socket/socket");
 async function Handle_AddBid(req, res) {
     // console.log("Received bid data:", req.body);
     try {
-        const { bid, timeline, description, gigId } = req.body
+        const { bid, Delivery_date, description, gigId } = req.body
+        console.log("Received bid data:", { bid, Delivery_date, description, gigId });
         // const freelancerId = new mongoose.Types.ObjectId();
 
         const newBid = new BidModel({
             bid,
-            timeline,
+            Delivery_date,
             description,
             gigId,
             freelancerId: req.user._id
@@ -23,8 +24,7 @@ async function Handle_AddBid(req, res) {
 
         const savedBid = await newBid.save();
 
-        const populatedBid = await BidModel.findById(savedBid._id)
-            .populate("freelancerId", "firstName lastName profileImage email country state");
+        const populatedBid = await BidModel.findById(savedBid._id).populate("freelancerId", "firstName lastName profileImage email country state");
 
         const gig = await JobModel.findById(gigId);
 
@@ -51,6 +51,8 @@ async function Handle_AddBid(req, res) {
             bid: populatedBid,
             message: "Bid added successfully"
         });
+
+        console.log("Bid added successfully:", populatedBid);
 
     } catch (error) {
         console.log("Error in Handle_AddBid:", error);
@@ -108,6 +110,8 @@ async function GetAllbids(req, res) {
 // get the bids by freelancerId
 async function GetBidsByFreelancer(req, res) {
     try {
+        console.log("Received freelancerId:", req.params.freelancerId);
+        
         const bids = await BidModel.find({ freelancerId: req.params.freelancerId }).populate({
             path: "gigId",
             select: "jobtitle projectCategory timeline jobDescription skills minBudget maxBudget clientId",

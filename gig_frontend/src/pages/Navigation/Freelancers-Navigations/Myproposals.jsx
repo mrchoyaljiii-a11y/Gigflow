@@ -3,24 +3,26 @@ import { NavLink } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
 import { GetBidsByFreelancer, WithdrawBid } from '../../../redux/Bid/Bid_slice';
 import { MdKeyboardArrowRight } from "react-icons/md";
-
+import { useGetSpecificFreelancerBids } from '../../../hooks/Bid_releted/useGetSpecificFreelancerBids.js';
 const Myproposals = () => {
     const [filter, setFilter] = useState("all");
 
-    const dispatch = useDispatch();
-
     const { user } = useSelector((state) => state.auth);
+    // console.log("freelancerId", user?._id);
 
-    useEffect(() => {
-        if (user && user._id) {
-            dispatch(GetBidsByFreelancer(user._id));
-        }
-    }, [user, dispatch]);
+    const {
+        data: bids,
+        isLoading,
+        isError,
+        error,
+    } = useGetSpecificFreelancerBids(user?._id);
 
+    // console.log("bids in freelancer ", bids?.bids_by_freelancer);
 
-    const { BidsByFreelancer } = useSelector((state) => state.BidSlice);
+    const Allbids = bids?.bids_by_freelancer || [];
 
-    // console.log("bids_by_freelancer in freelancer dashboard", BidsByFreelancer);
+    console.log("All bids", Allbids)
+
 
     const getStatus = (status) => {
         // console.log("bid", bid._id);
@@ -37,24 +39,42 @@ const Myproposals = () => {
 
 
     const filterdBids = useMemo(() => {
-        if (filter === "all") return BidsByFreelancer;
+        if (filter === "all") return Allbids;
 
         const statusMap = {
-            accepted: "hired"
+            accepted: "hired",
         };
 
         const actualStatus = statusMap[filter] || filter;
 
-        return BidsByFreelancer.filter(bid => bid.status === actualStatus);
-    }, [filter, BidsByFreelancer]);
+        return Allbids.filter(
+            (bid) => bid.status === actualStatus
+        );
+    }, [filter, Allbids]);
 
-    // console.log("filterd bids ", filterdBids());
+    console.log("filterd bids ", filterdBids);
+
+    if (isLoading) {
+        return (
+            <div className="text-center py-10">
+                Loading proposals...
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="text-center text-red-500 py-10">
+                {error.message}
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-5xl mx-auto px-4 pb-24">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-semibold text-slate-800">My Proposals <span>({BidsByFreelancer.length})</span></h1>
+                <h1 className="text-2xl font-semibold text-slate-800">My Proposals <span>({Allbids.length})</span></h1>
 
                 {/* Filters */}
                 <div className="flex gap-2">
@@ -68,7 +88,7 @@ const Myproposals = () => {
                                     ? "bg-primary text-white"
                                     : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                 }  
-                            
+
                                `}
                         >
                             {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -84,8 +104,27 @@ const Myproposals = () => {
                     <p className="text-center text-slate-500">No proposals found.</p>
                 ) : (
                     filterdBids?.map((bid) => {
-                        const { bid: bid_by_freelancer, status, _id: bid_id, gigId: { jobtitle, projectCategory, timeline, _id, jobDescription, minBudget, maxBudget } } = bid;
+                        const {
+                            bid: bid_by_freelancer,
+                            status,
+                            _id: bid_id,
+                            contractId,
+                            gigId,
+                        } = bid;
+
+                        const {
+                            jobtitle,
+                            projectCategory,
+                            timeline,
+                            jobDescription,
+                            minBudget,
+                            maxBudget,
+                            _id: gigIdValue,
+                        } = gigId;
+
+
                         const updatedStatus = getStatus(status);
+
                         return (
                             <div className="bg-surface-container-lowest p-6 rounded-xl hover:bg-surface-bright transition-all duration-300 group hover:shadow-[0_8px_24px_-4px_rgba(25,28,30,0.04)] shadow-sm"
                                 key={bid_id}>
@@ -135,9 +174,23 @@ const Myproposals = () => {
 
                                     {/* buttons */}
                                     <div className="flex md:flex-col justify-end gap-2 shrink-0">
-                                        <button className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-bold shadow-sm hover:shadow-md transition-all active:scale-95">Message</button>
-                                        <NavLink to={`/home/freelancer/detailed-bid/${bid_id}`} className="bg-slate-100 text-slate-600 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-slate-200 hover:text-slate-800 transition-all">View Bid Details</NavLink>
-                                        <button className={`text-red-500 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-red-300/20 hover:text-red-container/20 transition-all ${status === "rejected" || status === "withdraw" ? "hidden" : ""}`}
+                                        {status === "hired" ? (
+                                            <NavLink
+                                                to={`/contracts/${contractId}`}
+                                                className="bg-primary text-white px-5 py-2.5 rounded-full text-sm font-bold text-center"
+                                            >
+                                                View Contract
+                                            </NavLink>
+                                        ) : (
+                                            <button
+                                                disabled
+                                                className="bg-slate-200 text-slate-500 px-5 py-2.5 rounded-full text-sm font-bold cursor-not-allowed"
+                                            >
+                                                No Contract
+                                            </button>
+                                        )}
+                                        <NavLink to={`/home/freelancer/detailed-bid/${bid_id}`} className="bg-slate-100 text-slate-600 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-slate-200 hover:text-slate-800 transition-all border">View Bid Details</NavLink>
+                                        <button className={`text-red-500 px-5 py-2.5 rounded-full text-sm font-semibold hover:bg-red-300/20 hover:text-red-container/20 transition-all ${status === "rejected" || status === "withdraw" ? "hidden" : ""} border`}
                                             onClick={() => {
                                                 const data = {
                                                     bidId: bid_id,
@@ -156,6 +209,7 @@ const Myproposals = () => {
                 )
                 }
             </div>
+
         </div>
     );
 }

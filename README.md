@@ -20,7 +20,7 @@ project-root/
 
 ##  1. gig_frontend (Frontend)
 
-The frontend is built using **React**, **Redux**, **React Router**, and **Tailwind CSS**.
+The frontend is built using **React**, **Redux**, **React Router**, **Tailwind CSS** , **React query**.
 
 ###  Required NPM Packages
 

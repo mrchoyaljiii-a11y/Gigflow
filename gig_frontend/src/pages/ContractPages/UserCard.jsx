@@ -7,7 +7,8 @@ import {
   FiAlertCircle, FiPaperclip, FiSmile, FiSend, FiDownload,
   FiChevronRight, FiActivity, FiPhone, FiMoreVertical, FiImage,
   FiLock, FiCheck, FiStar, FiShield, FiTrendingUp, FiFileText,
-  FiUploadCloud, FiThumbsUp,
+  FiUploadCloud, FiThumbsUp,FiPhoneCall 
+  
 } from "react-icons/fi";
 import { BsTrophyFill } from "react-icons/bs";
 import { HiOutlineCurrencyDollar } from "react-icons/hi";
@@ -26,28 +27,52 @@ const freelancer = {
   online: true,
 };
 
-const FreelancerCard = ({ freelancerId }) => {
+const UserCard = ({ freelancerData, clientData, isLoading, UserRole }) => {
+
+  console.log("UserRole", UserRole)
 
   const dispatch = useDispatch();
 
-  // if (loading) return <p className="text-center py-20 text-gray-500">Loading...</p>
+  if (isLoading) return <p className="text-center py-20 text-gray-500">Loading...</p>
 
-  if (!freelancerId) return <p className="text-center py-20 text-gray-500">No data found.</p>
+  if (!freelancerData) return <p className="text-center py-20 text-gray-500">No data found.</p>
 
-  // console.log("freelancerData", freelancerId);
+  console.log("client data", clientData);
+
+  const sourceData = UserRole === "client" ? clientData : freelancerData;
+
+  if (!sourceData) return <p className="text-center py-20 text-gray-500">No data found.</p>;
 
   const {
-    firstName, lastName, professionalTitle,
-    country, state,
-    email, experienceLevel,
-    freelanerSkills, languages,
-    linkedInLink, websitelink,
-    profileSummary, profileImage,
-    rate, hourlyRate,
-    workExperience, education,
-    professionalCategory, createdAt
-  } = freelancerId;
+    firstName,
+    lastName,
+    country,
+    state,
+    profileImage,
+    createdAt,
+    languages,
+  } = sourceData;
 
+  const {
+    professionalTitle,
+    professionalCategory,
+    experienceLevel,
+    rate,
+    hourlyRate,
+    experience
+  } = freelancerData || {};
+
+  const {
+    clientType,
+    clientRole,
+    phoneNo,
+    company,
+  } = clientData || {};
+
+  console.log("clientData",clientData)
+
+
+  //client data for freelancer side
 
   return (
     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-300 p-6">
@@ -70,7 +95,11 @@ const FreelancerCard = ({ freelancerId }) => {
                 <BsTrophyFill size={10} /> Top Rated
               </span>
             </div>
-            <p className="text-sm text-gray-500 mt-0.5 capitalize">{professionalTitle} | {professionalCategory}</p>
+
+            {
+              UserRole ==="client" ? <p className="text-sm text-gray-500 mt-0.5 capitalize">{clientRole} At {company?.name}</p> :<p className="text-sm text-gray-500 mt-0.5 capitalize">{professionalTitle} | {professionalCategory}</p>
+            }
+
             <div className="flex items-center gap-3 mt-1.5 flex-wrap">
               <span className="flex items-center gap-1 text-sm font-medium text-gray-700">
                 <FiStar size={14} className="text-amber-400 fill-amber-400" />
@@ -89,7 +118,9 @@ const FreelancerCard = ({ freelancerId }) => {
         <div className="grid grid-cols-2 gap-3 sm:w-56 flex-shrink-0">
           {[
             { Icon: FiMapPin, label: "Location", val: `${country}, ${state}` },
-            { Icon: FiBriefcase, label: "Experience", val: freelancer.experience },
+
+            { Icon: UserRole === "client" ? FiPhoneCall : FiBriefcase , label: `${UserRole === "client" ? "Contact No" : "Experience"}`, val: `${UserRole === "client" ? phoneNo?.countryCode + " " + phoneNo?.number : experience}` },
+
             { Icon: FiClock, label: "Response Time", val: freelancer.responseTime },
             { Icon: FiUser, label: "Member Since", val: `${createdAt.split("T")[0]}` },
           ].map(({ Icon, label, val }) => (
@@ -107,38 +138,4 @@ const FreelancerCard = ({ freelancerId }) => {
   );
 };
 
-const StatCard = ({ value, label }) => {
-  return (
-    <div
-      className="
-      rounded-2xl
-
-      border
-      border-slate-200
-
-      bg-slate-50
-
-      p-5
-
-      text-center
-
-      transition-all
-      duration-300
-
-      hover:-translate-y-1
-      hover:bg-blue-50
-      hover:shadow-md
-    "
-    >
-      <h3 className="text-2xl font-bold text-slate-800">
-        {value}
-      </h3>
-
-      <p className="mt-1 text-sm text-slate-500">
-        {label}
-      </p>
-    </div>
-  );
-};
-
-export default FreelancerCard;
+export default UserCard;

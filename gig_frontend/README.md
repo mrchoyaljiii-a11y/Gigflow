@@ -15,3 +15,4 @@
 
 
 ## freelancer side 
+1.when refresh the jobs detailed_gig where the freelancer will make a bid nothing is show

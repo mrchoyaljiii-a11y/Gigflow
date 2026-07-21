@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { useGetClientInfo } from '../../../../hooks/Client_releted/useGetClientInfo';
 import { useGetJobs } from '../../../../hooks/job_releted/useGetJobs';
 import { useGetHired } from '../../../../hooks/Hired_records_releted/useGetHired';
-import { useGetAllContracts } from "../../../../hooks/useGetAllContracts";
-
+import { useGetAllContracts } from "../../../../hooks/contract_releted/useGetAllContracts";
+import {useNavigate} from 'react-router-dom';
 // icons
 import {
     FiHome, FiUser, FiBriefcase, FiMessageSquare,
@@ -21,7 +21,7 @@ import { MdVerified, MdOutlineCalendarMonth, MdOutlineEmail } from "react-icons/
 import {
     FaStar, FaLinkedin, FaGithub, FaGlobe,
     FaMapMarkerAlt, FaArrowUp, FaBolt, FaRegUser, FaWallet,
-    FaRegClock, FaShieldAlt, FaClock, FaBuilding, FaFileAlt, FaChevronDown, FaBriefcase,
+    FaRegClock, FaShieldAlt, FaClock, FaBuilding, FaFileAlt, FaChevronDown, FaBriefcase,FaSearch
 } from "react-icons/fa";
 
 import { LuBuilding2 } from "react-icons/lu";
@@ -37,7 +37,7 @@ import { IoIosRocket } from "react-icons/io";
 import { TbContract } from "react-icons/tb";
 
 const Client_Dashboard = () => {
-
+    const navigate = useNavigate();
     const {
         data: contractsData,
         isLoading: contractsLoading,
@@ -48,6 +48,16 @@ const Client_Dashboard = () => {
     console.log("All contracts Data",
         contractsData,
     );
+
+     const {
+        data: clientjobs = {},
+        isLoading: jobsLoading,
+        error: jobsError,
+        isError: jobsIsError,
+        refetch: jobsRefetch,
+    } = useGetJobs();
+
+    console.log("client jobs", clientjobs?.Clientjobs);
 
     const getTimeAgo = (date) => {
         const now = new Date();
@@ -94,19 +104,6 @@ const Client_Dashboard = () => {
         const years = Math.floor(diffInSeconds / year);
         return `Posted ${years} year${years > 1 ? "s" : ""} ago`;
     };
-
-
-    const {
-        data: clientjobs = {},
-        isLoading: jobsLoading,
-        error: jobsError,
-        isError: jobsIsError,
-        refetch: jobsRefetch,
-    } = useGetJobs();
-
-
-
-    // console.log("client jobs", clientjobs?.Clientjobs);
 
     const {
         data: hiredData = {},
@@ -246,7 +243,7 @@ const Client_Dashboard = () => {
 
     return (
 
-        <div className=" main container mx-auto">
+        <div className="main container mx-auto">
             {/* hero section */}
             <div
                 className="hero_section bg-cover bg-center relative overflow-hidden"
@@ -410,10 +407,12 @@ const Client_Dashboard = () => {
 
                             {/* contracts */}
 
+
                             <div className="bg-white border border-gray-200 rounded-3xl shadow-sm col-span-2">
 
+
                                 {/* Header */}
-                                <div className="flex items-center justify-between px-6 pt-5 pb-4">
+                                < div className="flex items-center justify-between px-6 pt-5 pb-4">
                                     <div className="flex items-center gap-2">
                                         <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center">
                                             <FaShieldAlt size={18} className="text-blue-500" />
@@ -426,85 +425,97 @@ const Client_Dashboard = () => {
                                 </div>
 
                                 {/* Table */}
-                                <div className="overflow-x-auto">
-                                    <table className="w-full">
-                                        <thead>
-                                            <tr className="border-t border-gray-100">
-                                                {["Freelancer", "Project", "Progress", "Amount", "Status"].map((col) => (
-                                                    <th
-                                                        key={col}
-                                                        className="text-left text-xs font-bold text-gray-500 px-6 py-3 uppercase tracking-wide"
-                                                    >
-                                                        {col}
-                                                    </th>
-                                                ))}
-                                                <th className="px-4 py-3" />
-                                            </tr>
-                                        </thead>
-                                        <tbody className="">
-                                            {contractsData.map((c) => (
-                                                <tr key={c.id} className="hover:bg-gray-50/60 transition-colors border-b border-gray-200 ">
-                                                    {/* Freelancer */}
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <img
-                                                                src={c.freelancerId?.profileImage?.url}
-                                                                alt={c.freelancerId?.firstName}
-                                                                className="w-10 h-10 rounded-full object-cover border border-gray-100"
-                                                            />
-                                                            <div>
-                                                                <p className="text-sm font-semibold text-gray-900">{`${c.freelancerId?.firstName} ${c.freelancerId?.lastName}`}</p>
-                                                            </div>
-                                                        </div>
-                                                    </td>
 
-                                                    {/* Project */}
-                                                    <td className="px-6 py-4">
-                                                        <p className="text-sm font-semibold text-gray-800 max-w-[160px] leading-snug">
-                                                            {c.contractTitle}
-                                                        </p>
-                                                    </td>
-
-                                                    {/* Progress */}
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-sm font-semibold text-gray-700 w-8">0%</span>
-                                                            <div className="w-28 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                                <div
-                                                                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                                                                    style={{ width: `${c.progress}%` }}
-                                                                />
-                                                            </div>
-                                                        </div>
-                                                    </td>
-
-                                                    {/* Amount */}
-                                                    <td className="px-6 py-4">
-                                                        <span className="text-sm font-bold text-gray-900">${c.AgreedPrice}</span>
-                                                    </td>
-
-                                                    {/* Status */}
-                                                    <td className="px-6 py-4">
-                                                        <span className="text-xs font-semibold text-blue-500 bg-blue-50 border border-blue-100 px-3 py-1 rounded-lg whitespace-nowrap">
-                                                            {c.contractStatus}
-                                                        </span>
-
-                                                    </td>
-
-                                                    {/* Actions */}
-                                                    <td className="px-4 py-4">
-                                                        <button className="flex items-center gap-1 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors">
-                                                            View Contract
-                                                        </button>
-                                                    </td>
+                                {contractsData && contractsData.length > 0 ? (
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full">
+                                            <thead>
+                                                <tr className="border-t border-gray-100">
+                                                    {["Freelancer", "Project", "Progress", "Amount", "Status"].map((col) => (
+                                                        <th
+                                                            key={col}
+                                                            className="text-left text-xs font-bold text-gray-500 px-6 py-3 uppercase tracking-wide"
+                                                        >
+                                                            {col}
+                                                        </th>
+                                                    ))}
+                                                    <th className="px-4 py-3" />
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </thead>
+                                            <tbody className="">
+                                                {contractsData.map((c) => (
+                                                    <tr key={c.id} className="hover:bg-gray-50/60 transition-colors border-b border-gray-200 ">
+                                                        {/* Freelancer */}
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <img
+                                                                    src={c.freelancerId?.profileImage?.url}
+                                                                    alt={c.freelancerId?.firstName}
+                                                                    className="w-10 h-10 rounded-full object-cover border border-gray-100"
+                                                                />
+                                                                <div>
+                                                                    <p className="text-sm font-semibold text-gray-900">{`${c.freelancerId?.firstName} ${c.freelancerId?.lastName}`}</p>
+                                                                </div>
+                                                            </div>
+                                                        </td>
 
+                                                        {/* Project */}
+                                                        <td className="px-6 py-4">
+                                                            <p className="text-sm font-semibold text-gray-800 max-w-[160px] leading-snug">
+                                                                {c.contractTitle}
+                                                            </p>
+                                                        </td>
+
+                                                        {/* Progress */}
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-sm font-semibold text-gray-700 w-8">0%</span>
+                                                                <div className="w-28 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                                                    <div
+                                                                        className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                                                                        style={{ width: `${c.progress}%` }}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </td>
+
+                                                        {/* Amount */}
+                                                        <td className="px-6 py-4">
+                                                            <span className="text-sm font-bold text-gray-900">${c.AgreedPrice}</span>
+                                                        </td>
+
+                                                        {/* Status */}
+                                                        <td className="px-6 py-4">
+                                                            <span className="text-xs font-semibold text-blue-500 bg-blue-50 border border-blue-100 px-3 py-1 rounded-lg whitespace-nowrap">
+                                                                {c.contractStatus}
+                                                            </span>
+
+                                                        </td>
+
+                                                        {/* Actions */}
+                                                        <td className="px-4 py-4">
+                                                            <button className="flex items-center gap-1 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors">
+                                                                View Contract
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                ) : (
+
+                                    <div className="flex flex-col items-center justify-center h-96">
+                                        <h2 className="text-2xl font-semibold text-gray-600">No Contracts Found</h2>
+                                        <p className='text-2xl font-semibold text-gray-600'> Hire a freelancer to get Contracts</p>
+                                    </div>
+                                )
+
+                                }
 
                             </div>
+
+
 
                             {/* paymant overiew */}
                             <div className="bg-white border border-gray-200 rounded-3xl shadow-sm">
@@ -635,48 +646,59 @@ const Client_Dashboard = () => {
                                     </div>
                                 </div>
 
+                                {
+                                    hiredData?.hired?.length === 0 ? (
+                                        <div className='flex flex-col justify-center items-center'>
+                                            <h1 className='text-2xl font-semibold text-gray-900'>you have not hired any freelancer yet!</h1>
+                                            <button
+                                            className='flex items-center gap-2 text-blue-600 font-semibold hover:text-blue-700 transition-colors mt-4 cursor-pointer border border-blue-600 px-4 py-2 rounded-md'
+                                           onClick={()=> navigate('/home/Find_freelancers')}
+                                           ><FaSearch size={18} /> Hire a freelancer</button>
+                                        </div>
+                                    ) : (
+                                        <div className="">
+                                            {hiredData?.hired?.map((hire, index) => (
+                                                <div key={hire._id} className="flex gap-4 ">
+                                                    {/* Timeline Line and Dot */}
 
-                                <div className="">
-                                    {hiredData?.hired?.map((hire, index) => (
-                                        <div key={hire._id} className="flex gap-4 ">
-                                            {/* Timeline Line and Dot */}
+                                                    <div className="flex flex-col items-center ">
+                                                        <div className="w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-sm"></div>
+                                                        {index !== hiredData?.hired?.length - 1 && (
+                                                            <div className="w-1 h-23 bg-blue-200"></div>
+                                                        )}
+                                                    </div>
 
-                                            <div className="flex flex-col items-center ">
-                                                <div className="w-4 h-4 bg-blue-600 rounded-full border-4 border-white shadow-sm"></div>
-                                                {index !== hiredData?.hired?.length - 1 && (
-                                                    <div className="w-1 h-23 bg-blue-200"></div>
-                                                )}
-                                            </div>
+                                                    {/* Content */}
+                                                    <div className="flex-1">
+                                                        <div className="flex items-start justify-between shadow-sm rounded-xl p-4 m-1 hover:shadow-md trasition-shadow duration-300">
+                                                            <div className="flex items-start gap-3 flex-1">
+                                                                {/* Avatar */}
+                                                                <img
+                                                                    src={hire?.freelancerId?.profileImage?.url}
+                                                                    alt={hire?.freelancerId?.firstName}
+                                                                    className="w-12 h-12 rounded-full object-cover"
+                                                                />
 
-                                            {/* Content */}
-                                            <div className="flex-1">
-                                                <div className="flex items-start justify-between shadow-sm rounded-xl p-4 m-1 hover:shadow-md trasition-shadow duration-300">
-                                                    <div className="flex items-start gap-3 flex-1">
-                                                        {/* Avatar */}
-                                                        <img
-                                                            src={hire?.freelancerId?.profileImage?.url}
-                                                            alt={hire?.freelancerId?.firstName}
-                                                            className="w-12 h-12 rounded-full object-cover"
-                                                        />
+                                                                {/* Info */}
+                                                                <div>
+                                                                    <p className="text-gray-500 text-sm mb-1">{hire.createdAt}</p>
+                                                                    <p className="text-gray-900 font-semibold">Hired {`${hire?.freelancerId?.firstName} ${hire?.freelancerId?.lastName}`}</p>
+                                                                    <p className="text-gray-600 text-sm">{hire.gigName}</p>
+                                                                </div>
+                                                            </div>
 
-                                                        {/* Info */}
-                                                        <div>
-                                                            <p className="text-gray-500 text-sm mb-1">{hire.createdAt}</p>
-                                                            <p className="text-gray-900 font-semibold">Hired {`${hire?.freelancerId?.firstName} ${hire?.freelancerId?.lastName}`}</p>
-                                                            <p className="text-gray-600 text-sm">{hire.gigName}</p>
+                                                            {/* Contract Value */}
+                                                            <div className="text-right">
+                                                                <p className="text-gray-900 font-semibold">{hire.agreedPrice}</p>
+                                                                <p className="text-gray-500 text-xs">Contract Value</p>
+                                                            </div>
                                                         </div>
                                                     </div>
-
-                                                    {/* Contract Value */}
-                                                    <div className="text-right">
-                                                        <p className="text-gray-900 font-semibold">{hire.agreedPrice}</p>
-                                                        <p className="text-gray-500 text-xs">Contract Value</p>
-                                                    </div>
                                                 </div>
-                                            </div>
+                                            ))}
                                         </div>
-                                    ))}
-                                </div>
+                                    )
+                                }
 
                             </div>
 
@@ -685,16 +707,10 @@ const Client_Dashboard = () => {
 
                 </div>
 
-            </section>
+            </section >
 
-        </div>
+        </div >
     )
 }
 
 export default Client_Dashboard
-
-
-
-
-
-

@@ -18,7 +18,7 @@ const Freelancer_router = require('./routers/Freelancer_releted_router/Freelance
 const notification_router = require('./routers/Notification/notification_roter'); 
 const Extra_info_router = require('./routers/Extra_user_info/Extra_info');
 const contract_router = require('./routers/contract_router/contract_router');
-
+const client_router = require('./routers/client_releted_router/client_releted_router');
 //  DB
 const ConnectDB = require('./connections/DB');
 
@@ -52,7 +52,8 @@ app.use(user_router);
 app.use(Freelancer_router);
 app.use(notification_router); 
 app.use(Extra_info_router);
-app.use(contract_router); //line 53
+app.use(contract_router); 
+app.use(client_router);
 
 //  TEST ROUTE
 app.get("/", (req, res) => {

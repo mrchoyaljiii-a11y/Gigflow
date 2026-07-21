@@ -1,14 +1,26 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 //! its a bid model
-const GigModel = new Schema({
+const BidModel = new Schema({
     bid: { type: Number, required: true },
 
-    timeline: { type: String, required: true },
+    Delivery_date: {
+        deliveryTime:{
+            type:Number,
+            required: true,
+        },
+        
+        deliveryUnit: {
+            type: String,
+            // enum: ["Days", "Weeks", "Months"],
+            // default: "Days",
+            required: true
+        }
+    },
 
     freelancerId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        ref: "Freelancer",
         required: true
     },
 
@@ -37,8 +49,8 @@ const GigModel = new Schema({
     contractId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Contract",
-        required: true
+        // required: true
     },
 
 }, { timestamps: true });
-module.exports = mongoose.model('Bid', GigModel);
+module.exports = mongoose.model('Bid', BidModel);

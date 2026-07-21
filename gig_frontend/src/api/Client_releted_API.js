@@ -18,3 +18,15 @@ export const registerUser = async (userData) => {
         return error.response?.data || { signup_error: ["Signup failed"] };
     }
 };
+
+// update client profile
+export const updateClientProfile = async (payload) => {
+    try {
+        const res = await api.put('/api/client/profile', payload, { withCredentials: true });
+        return res.data; //backend response
+    }
+    catch (error) {
+        console.log("Backend error:", error.response.data);
+        return error.response?.data || { signup_error: ["Signup failed"] };
+    }
+};

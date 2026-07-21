@@ -810,8 +810,7 @@ const ProfileForm = () => {
                                 </div>
                             </div>
 
-
-
+                            {/* country + state */}
                             <div className="flex gap-4 mt-6">
                                 <div className="w-1/2 text-left">
                                     <label className="font-medium"
