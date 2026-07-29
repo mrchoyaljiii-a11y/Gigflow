@@ -1,17 +1,17 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createMilestone } from "../../../api/contractAPI";
-import { getContract } from '../../../api/contractAPI';
+import { updateMilestone } from "../../../api/contractAPI";
 
-export const useCreateMilestone = (contractId) => {
+
+export const useUpdateMilestone = (contractId) => {
     
-     console.log("contractId in useCreateMilestone",contractId);
+     console.log("contractId in useUpdateMilestone",contractId);
 
     const queryClient = useQueryClient();
     
     return useMutation({
-        mutationFn: createMilestone,
+        mutationFn: (milestoneData) => updateMilestone(contractId, milestoneData),
         onError: (error) => {
-            console.error("Contract milestonecreation failed:", error.message);
+            console.error("Contract milestone updation failed:", error.message);
         },
         onSuccess: async (data) => {
 

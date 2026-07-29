@@ -1,7 +1,7 @@
 const Hired = require('../model/freelancer/Hired');
 const bids = require('../model/BidModel/BidModel');
 const Notification = require("../model/notification/notification");
-const { getIO, getUsers } = require("../Socket/socket");
+const { getIO } = require("../Socket/socket");
 const contractModel = require('../model/Contract/contract');
 
 // fetch the hired records hired by client from specific job 

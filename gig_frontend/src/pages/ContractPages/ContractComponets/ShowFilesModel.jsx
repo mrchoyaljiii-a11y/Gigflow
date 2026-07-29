@@ -19,7 +19,7 @@ const ShowFilesModel = ({ title, files = [], onClose }) => {
                     {files.length === 0 ? (
                         <div className="text-center text-slate-500 py-8">No files attached.</div>
                     ) : (
-                        files.map((file, index) => (
+                        files.map((file, index) => (    
                             <div key={index} className="flex items-center justify-between border rounded-2xl p-4 hover:bg-slate-50">
                                 <div>
                                     <h3 className="font-semibold text-slate-700">{file.fileName}</h3>

@@ -3,10 +3,12 @@ import { useDropzone } from "react-dropzone";
 import { useCreateMilestone } from '../../hooks/contract_releted/milestone_releted/useCreateMilestone.js';
 import ShowFilesModel from './ContractComponets/ShowFilesModel.jsx';
 
+import Request_Revision from './ContractComponets/Request_Revision.jsx';
+
 import {
     FaClock,
     FaLock,
-    FaHourglassHalf,
+    FaHourglassHalf, FaEdit, FaTrash,
     FaEye, FaThumbsUp, FaFileAlt, FaCalendarAlt,
     FaExclamationCircle, FaMoneyCheckAlt, FaBolt,
     FaCheckCircle, FaPlayCircle, FaPaperPlane, FaUndoAlt,
@@ -28,7 +30,8 @@ import {
 import {
     FaCircleCheck,
     FaMoneyBillWave,
-    FaCircleXmark
+    FaCircleXmark,
+    FaRotateLeft
 } from "react-icons/fa6";
 
 import { MdGavel } from "react-icons/md";
@@ -36,6 +39,7 @@ import { IoCloudUploadOutline, IoRocket } from "react-icons/io5";
 import { CgSandClock } from "react-icons/cg";
 import { getRemeningDaysStatus } from "../../utils/RemaingDays.js";
 import { useHandleMilestone } from "../../hooks/contract_releted/milestone_releted/useHandleMilestone.js";
+import { useUpdateMilestone } from "../../hooks/contract_releted/milestone_releted/useUpdateMilestone.js";
 
 
 // desides the overall design of card according to sattus
@@ -47,9 +51,21 @@ const STATUS_CONFIG = {
         icon: FaHourglassHalf,
         nodeBg: "bg-amber-500",
         nodeIcon: CgSandClock,
-        cardBg: "bg-amber-50/70",
+        cardBg: "bg-amber-50/90",
         cardBorder: "border-amber-100",
         infoitemborder: "border border-amber-200",
+    },
+
+    CHANGES_REQUESTED: {
+        label: "Changes Requested",
+        badgeBg: "bg-orange-50",
+        badgeText: "text-orange-700",
+        icon: FaRotateLeft,
+        nodeBg: "bg-orange-500",
+        nodeIcon: FaRotateLeft,
+        cardBg: "bg-orange-50/70",
+        cardBorder: "border-orange-100",
+        infoitemborder: "border border-orange-200",
     },
 
     IN_PROGRESS: {
@@ -131,6 +147,13 @@ const NOTE = {
         note: "The milestone has been sent to the freelancer. Waiting for them to accept and begin work.",
         style:
             "text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2",
+    },
+
+    CHANGES_REQUESTED: {
+        icon: FaRotateLeft,
+        note: "The freelancer has requested changes to this milestone. Review their feedback, update the milestone details if needed, and resend it for acceptance.",
+        style:
+            "text-sm text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2",
     },
 
     ACCEPTED: {
@@ -258,23 +281,38 @@ function ActionButton({ children, icon: Icon, variant = "default", onClick, disa
 }
 
 // Add milestone form =
-const Addmilestone = ({ setAddmilestone, contractId, setShowTost }) => {
+const Addmilestone = ({ setAddmilestone, contractId, setShowTost, editingMilestone = null }) => {
+
+    const isEditMode = !!editingMilestone;
 
     const {
         mutateAsync: createMilestone,
-        isPending,
+        isPending: isCreating
     } = useCreateMilestone(contractId);
+
+    const { mutateAsync: updateMilestone, isPending: isUpdating } = useUpdateMilestone(contractId);
 
     const [files, setFiles] = useState([]);
     const [fileErrors, setFileErrors] = useState([]);
     const [uploadProgress, setUploadProgress] = useState(0);
 
     const [formData, setFormData] = useState({
-        title: "",
-        description: "",
-        amount: "",
-        dueDate: "",
+        title: editingMilestone?.milestoneTitle || "",
+        description: editingMilestone?.milestoneDescription || "",
+        amount: editingMilestone?.milestoneAmount || "",
+        dueDate: editingMilestone?.milestoneDueDate?.split("T")[0] || "",
     });
+
+    const resetForm = () => {
+        setFormData({
+            title: "",
+            description: "",
+            amount: "",
+            dueDate: "",
+        });
+        setFiles([]);
+        setFileErrors([]);
+    }
 
     const [errors, setErrors] = useState({});
 
@@ -363,8 +401,8 @@ const Addmilestone = ({ setAddmilestone, contractId, setShowTost }) => {
             today.setHours(0, 0, 0, 0);
             if (selectedDate < today) newErrors.dueDate = "Due date cannot be in the past";
         }
-
         setErrors(newErrors);
+
         return Object.keys(newErrors).length === 0;
     };
 
@@ -376,15 +414,22 @@ const Addmilestone = ({ setAddmilestone, contractId, setShowTost }) => {
         data.append("description", formData.description);
         data.append("amount", formData.amount);
         data.append("dueDate", formData.dueDate);
-        data.append("contractId", contractId);
-
         files.forEach((file) => data.append("ClientAttachments", file));
 
-        const result = await createMilestone(data);
-
-        if (result.success) {
-            setShowTost({ show: true, message: result.message });
-            setAddmilestone(false);
+        if (isEditMode) {
+            data.append("milestoneId", editingMilestone._id);
+            const result = await updateMilestone(data);
+            if (result.success) {
+                setShowTost({ show: true, message: result.message });
+                setAddmilestone(false);
+            }
+        } else {
+            data.append("contractId", contractId);
+            const result = await createMilestone(data);
+            if (result.success) {
+                setShowTost({ show: true, message: result.message });
+                setAddmilestone(false);
+            }
         }
     };
 
@@ -399,7 +444,11 @@ const Addmilestone = ({ setAddmilestone, contractId, setShowTost }) => {
                         </div>
 
                         <div>
-                            <h2 className="text-2xl font-bold text-slate-800">Create New Milestone</h2>
+
+                            <h2 className="text-2xl font-bold text-slate-800">
+                                {isEditMode ? "Edit Milestone" : "Create New Milestone"}
+                            </h2>
+
                             <p className="mt-1 text-sm text-slate-500">
                                 Define project goals, due dates, and escrow payments for your freelancer.
                             </p>
@@ -408,11 +457,20 @@ const Addmilestone = ({ setAddmilestone, contractId, setShowTost }) => {
 
                     <button
                         className="border p-2 rounded-xl font-semibold text-lg text-red-600 hover:bg-red-50 transition-all cursor-pointer"
-                        onClick={() => setAddmilestone(false)}
+                        onClick={() => {
+                            resetForm();
+                            setAddmilestone(false);
+                        }}
                     >
                         <span>X</span> Close
                     </button>
                 </div>
+
+                {isEditMode && editingMilestone.changeRequest?.reason && (
+                    <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-700">
+                        <strong>Freelancer's requested changes:</strong> {editingMilestone.changeRequest.reason}
+                    </div>
+                )}
             </div>
 
             {/* Form */}
@@ -426,7 +484,7 @@ const Addmilestone = ({ setAddmilestone, contractId, setShowTost }) => {
                         onChange={handleChange}
                         placeholder="Example: Homepage Design & Wireframes"
                         className={`w-full rounded-2xl border px-5 py-4 outline-none transition-all
-  ${errors.title ? "border-red-500" : "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"}`}
+           ${errors.title ? "border-red-500" : "border-slate-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"}`}
                     />
                     {errors.title && <p className="mt-2 text-sm text-red-500">{errors.title}</p>}
                 </div>
@@ -543,17 +601,20 @@ const Addmilestone = ({ setAddmilestone, contractId, setShowTost }) => {
                 <div className="flex flex-wrap gap-4 pt-2">
                     <button
                         onClick={handleSubmit}
-                        disabled={isPending}
+                        disabled={isCreating}
                         className=" flex items-center gap-2 rounded-2xl bg-blue-600 px-8 py-4 font-medium text-white shadow-lg transition-all hover:-translate-y-1 hover:bg-blue-700"
                     >
-                        {isPending ? "Uploading..." : (
-                            <p className="flex items-center gap-1"><FiPlus />Create Milestone</p>
+                        {isCreating ? "Uploading..." : (
+                            <p className="flex items-center gap-1"><FiPlus />{isEditMode ? "Edit Milestone" : "Create  Milestone"}</p>
                         )}
                     </button>
 
                     <button
                         className=" rounded-2xl border border-slate-200 px-8 py-4 text-slate-700 transition hover:bg-slate-50"
-                        onClick={() => setAddmilestone(false)}
+                        onClick={() => {
+                            resetForm();
+                            setAddmilestone(false);
+                        }}
                     >
                         Cancel
                     </button>
@@ -568,22 +629,39 @@ const Addmilestone = ({ setAddmilestone, contractId, setShowTost }) => {
 const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setShowTost, UserRole }) => {
 
     const [AddmilestoneOpen, setAddmilestone] = useState(false);
-    const [expandedDescriptions, setExpandedDescriptions] = useState(null);
     const [showFilesModal, setShowFilesModal] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState({ title: "", files: [] });
+    const [showRevisionModal, setShowRevisionModal] = useState(false);
+    const [expandedDescriptions, setExpandedDescriptions] = useState(null);
+    const [expandedChangeRequests, setExpandedChangeRequests] = useState(null);
+    const [editingMilestone, setEditingMilestone] = useState(null); // holds the milestone object, or null
 
-    const toggleDescription = (id) => {
-        setExpandedDescriptions((prev) => (prev === id ? null : id));
+    const toggleDescription = (index) => {
+        setExpandedDescriptions((prev) => (prev === index ? null : index));
     };
 
-    const { mutate: MilestoneAction } = useHandleMilestone();
+    const toggleChangeRequest = (index) => {
+        setExpandedChangeRequests((prev) => (prev === index ? null : index));
+    };
+
+    const handleEditMilestone = (item) => {
+        setEditingMilestone(item);
+        setAddmilestone(true);
+    };
+
+    const handleCancelMilestone = (milestoneId) => {
+        // call your cancel-milestone mutation here
+    };
+
+
+    const { mutate: MilestoneAction } = useHandleMilestone(contractId);
 
     function HandleMilestoneAction(milestoneAction) {
         MilestoneAction(milestoneAction);
     }
 
     if (AddmilestoneOpen) {
-        return <Addmilestone setAddmilestone={setAddmilestone} contractId={contractId} setShowTost={setShowTost} />;
+        return <Addmilestone setAddmilestone={setAddmilestone} contractId={contractId} setShowTost={setShowTost} editingMilestone={editingMilestone} />;
     }
 
     return (
@@ -630,14 +708,17 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
 
                         <button
                             className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-3 text-white shadow-lg transition-all hover:-translate-y-1 hover:bg-blue-700 hover:shadow-xl"
-                            onClick={() => setAddmilestone(true)}
+                            onClick={() => {
+                                setAddmilestone(true);
+                                setEditingMilestone(null);
+                            }}
                         >
                             <FiEdit />
                             Add Milestone
                         </button>
                     </div>
 
-                    {/* Timeline */}
+                    {/* card and Timeline */}
                     <div className="p-2">
                         {[...milestonesData].reverse().map((item, index) => {
                             const {
@@ -651,6 +732,7 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                                 milestoneStartDate,
                                 ClientAttachments = [],
                                 FreelancerAttachments = [],
+                                changeRequest
                             } = item;
 
                             const cfg = STATUS_CONFIG[milestoneStatus];
@@ -665,7 +747,7 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                             const noteConfig = NOTE[milestoneStatus];
                             const Icon = noteConfig?.icon;
 
-
+                            // !milestone card 
                             return (
                                 <div key={milestoneId || createdAt} className="flex gap-2">
                                     <TimelineNode status={milestoneStatus} isLast={index === milestonesData.length - 1} />
@@ -759,6 +841,7 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                                             />
                                         </div>
 
+                                        {/* note */}
 
                                         {noteConfig && (
                                             <div
@@ -779,6 +862,75 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                                             </div>
                                         )}
 
+                                        {/* Change Request by freelancer  */}
+                                        {milestoneStatus === "CHANGES_REQUESTED" && (
+                                            <>
+                                                {/* Change Request */}
+                                                <div className="mt-4 rounded-xl border border-orange-200 bg-orange-50 p-4">
+                                                    <div className="flex items-start gap-3">
+                                                        <FiAlertTriangle className="mt-1 text-lg text-orange-600" />
+
+                                                        <div className="flex-1">
+                                                            <h4 className="font-semibold text-orange-800">
+                                                                Freelancer Requested Changes
+                                                            </h4>
+
+                                                            {/* request reason description */}
+                                                            <div className="mt-2 mb-4">
+                                                                <p className="text-[0.9rem] font-medium text-gray-400 uppercase tracking-wide mb-1">
+                                                                    Description
+                                                                </p>
+
+                                                                <div
+                                                                    className={`overflow-hidden transition-all duration-600 ease-in-out ${expandedChangeRequests === index ? "max-h-96" : "max-h-18"
+                                                                        }`}
+                                                                >
+                                                                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                                                        {changeRequest?.reason}
+                                                                    </p>
+                                                                </div>
+
+                                                                {changeRequest?.reason.length > 150 && (
+                                                                    <button
+                                                                        onClick={() => toggleChangeRequest(index)}
+                                                                        className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                                                                    >
+                                                                        {expandedChangeRequests === index ? "Show Less" : "Show More"}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+
+                                                            {changeRequest?.ChangeRequestDate && (
+                                                                <p className="mt-2 text-xs text-orange-500 border p-1 rounded w-fit">
+                                                                    Requested on : {new Date(changeRequest?.ChangeRequestDate).toLocaleDateString()}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                    <ActionButton
+                                                        variant="primary"
+                                                        icon={FaEdit}
+                                                        onClick={() => handleEditMilestone(item)}
+                                                    >
+                                                        Edit Milestone
+                                                    </ActionButton>
+
+                                                    <ActionButton
+                                                        variant="danger"
+                                                        icon={FaTrash}
+                                                        onClick={() => handleCancelMilestone(milestoneId)}
+                                                    >
+                                                        Cancel Milestone
+                                                    </ActionButton>
+                                                </div>
+                                            </>
+                                        )}
+
+                                        {/* Actions BUTTONS */}
                                         {milestoneStatus === "SUBMITTED" && (
                                             <div className="mt-3 flex flex-wrap gap-2">
                                                 <ActionButton
@@ -789,7 +941,12 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                                                     Approved
                                                 </ActionButton>
 
-                                                <ActionButton variant="danger" icon={FiAlertTriangle}>
+                                                <ActionButton
+                                                    variant="danger"
+                                                    icon={FiAlertTriangle}
+                                                    onClick={() => setShowRevisionModal(true)}
+
+                                                >
                                                     Request Changes
                                                 </ActionButton>
 
@@ -837,6 +994,7 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                                                 </span>
                                             </div>
                                         )}
+
                                     </div>
                                 </div>
                             );
@@ -844,12 +1002,23 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                     </div>
                 </>
             )}
+
             {
                 showFilesModal && (
                     <ShowFilesModel
                         title={selectedFiles.title}
                         files={selectedFiles.files}
                         onClose={() => setShowFilesModal(false)} />
+                )
+            }
+
+            {
+                showRevisionModal && (
+                    <Request_Revision
+                        isOpen={showRevisionModal}
+                        onClose={() => setShowRevisionModal(false)}
+
+                    />
                 )
             }
 

@@ -3,19 +3,25 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
 import { showToast } from "../../../redux/ShowTost/ShowToastSlice.js";
 
-export const useHandleMilestone = () => {
+export const useHandleMilestone = (contractId) => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: HandleMilestoneAction,
 
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
+
+            // console.log("contractId in useHandleMilestone", contractId);
+
+            // console.log("Mutation Success");
 
             // Refetch contract
             queryClient.invalidateQueries({
-                queryKey: ["contract"],
+                queryKey: ["contract", contractId]
             });
+
+            // console.log("Invalidated");
 
             dispatch(
                 showToast({

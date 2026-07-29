@@ -17,14 +17,14 @@ const initSocket = (server) => {
         socket.on("register", (userId) => {
             const roomId = userId.toString();
 
-            socket.join(roomId); // ✅ join room
+            socket.join(roomId); 
             socket.userId = roomId;
 
             console.log(`🟢 User ${roomId} joined room`);
             console.log("📦 Rooms:", Array.from(socket.rooms));
         });
 
-        // 🔴 DISCONNECT
+        //  DISCONNECT
         socket.on("disconnect", () => {
             console.log("🔴 User disconnected:", socket.id);
 

@@ -29,7 +29,7 @@ const freelancer = {
 
 const UserCard = ({ freelancerData, clientData, isLoading, UserRole }) => {
 
-  console.log("UserRole", UserRole)
+  // console.log("UserRole", UserRole)
 
   const dispatch = useDispatch();
 
@@ -37,7 +37,7 @@ const UserCard = ({ freelancerData, clientData, isLoading, UserRole }) => {
 
   if (!freelancerData) return <p className="text-center py-20 text-gray-500">No data found.</p>
 
-  console.log("client data", clientData);
+  // console.log("client data", clientData);
 
   const sourceData = UserRole === "client" ? clientData : freelancerData;
 

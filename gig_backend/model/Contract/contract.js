@@ -43,6 +43,7 @@ const MilestoneSchema = new Schema({
         type: String,
         enum: [
             "PENDING_ACCEPTANCE",      // created but work not started
+            "CHANGES_REQUESTED",      // Freelancer requested milestone updates
             "IN_PROGRESS",  // freelancer working
             "SUBMITTED",    // freelancer submitted work
             "APPROVED",     // client approved
@@ -51,6 +52,12 @@ const MilestoneSchema = new Schema({
             "DISPUTE"      // dispute raised
         ],
         default: "PENDING_ACCEPTANCE"
+    },
+
+
+    changeRequest :{
+        reason: String,
+        ChangeRequestDate: Date
     },
 
     ClientAttachments: [Schema.Types.Mixed],
@@ -62,7 +69,6 @@ const MilestoneSchema = new Schema({
         default: Date.now
     },
 })
-
 
 paymentSchema = new Schema({
     totleBudget: {

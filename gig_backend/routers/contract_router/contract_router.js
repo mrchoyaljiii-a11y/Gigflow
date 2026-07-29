@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { Handle_HireFreelancer_CreateContract, Handle_GetContractById, Handle_create_milestone, Handle_GetAllContracts,
-    Handle_milestone_Actions,Handle_UploadWork
+    Handle_milestone_Actions,Handle_UploadWork,Handle_update_milestone,
 } = require("../../controllers/Contract_creation");
 const authMiddleware = require('../../middlewares/authMiddleware');
 
@@ -62,5 +62,26 @@ router.put('/api/milestone/actions', authMiddleware, Handle_milestone_Actions);
 
 //upload work by freelancer 
 router.post('/api/milestone/upload_Freelancer_Work', authMiddleware, upload.array('FreelancerAttachments'), Handle_UploadWork);
+
+router.patch(`/api/milestone/update/:contractId`, authMiddleware,upload.array('ClientAttachments', 5),
+    (req, res, next) => {
+
+        const totalSize = req.files.reduce(
+            (sum, file) => sum + file.size,
+            0
+        );
+
+        const MAX_TOTAL_SIZE = 50 * 1024 * 1024; // 50 MB
+
+        if (totalSize > MAX_TOTAL_SIZE) {
+            return res.status(400).json({
+                success: false,
+                message: "Total file size cannot exceed 50 MB"
+            });
+        }
+
+        next();
+
+    }, Handle_update_milestone);
 
 module.exports = router;

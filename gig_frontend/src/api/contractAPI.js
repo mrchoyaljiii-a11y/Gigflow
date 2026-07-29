@@ -22,6 +22,9 @@ export const getContract = async (contractId) => {
     if (!response.data.success) {
         throw new Error(response.data.message || "Failed to fetch contract");
     }
+
+    console.log("Fetched Contract:", response.data.contract);
+
     return response.data.contract;
 };
 
@@ -49,6 +52,13 @@ export const createMilestone = async (milestoneData) => {
     return response.data;
 }
 
+export const updateMilestone = async (contractId, milestoneData) => {
+    const response = await api.patch(`/api/milestone/update/${contractId}`, milestoneData);
+    if (!response.data.success) {
+        throw new Error(response.data.message || "Failed to create milestone");
+    }
+    return response.data;
+}
 
 // get milestone of the contract
 export const getMilestone = async (contractId) => {
@@ -64,8 +74,7 @@ export const getMilestone = async (contractId) => {
 
 // Handle milestone action by freelancer like accept or reject , submit work etc...
 //milestoneAction caontain milestoneId and action
-export const HandleMilestoneAction = async (milestoneAction) =>
-{
+export const HandleMilestoneAction = async (milestoneAction) => {
     const response = await api.put(`/api/milestone/actions`, milestoneAction);
     if (!response.data.success) {
         throw new Error(response.data.message || "Failed to accept milestone");

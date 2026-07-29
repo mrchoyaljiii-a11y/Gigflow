@@ -7,6 +7,12 @@ import {
     FaPlayCircle, FaUpload, FaRedoAlt, FaThumbsUp,
 } from "react-icons/fa";
 
+import {
+    FaCircleCheck,
+    FaMoneyBillWave,
+    FaCircleXmark,
+    FaRotateLeft
+} from "react-icons/fa6";
 
 import { IoRocket, IoCloudUploadOutline } from "react-icons/io5";
 
@@ -24,6 +30,7 @@ import { getRemeningDaysStatus } from '../../../utils/RemaingDays.js';
 import { useFileDropzone } from '../../../hooks/DropZone/useFileDropzone.jsx';
 import { useUploadWork } from '../../../hooks/contract_releted/milestone_releted/useUploadWork.js';
 import ShowFilesModel from '../ContractComponets/ShowFilesModel.jsx';
+import Request_Revision from '../ContractComponets/Request_Revision.jsx';
 
 
 
@@ -39,6 +46,18 @@ const STATUS_CONFIG = {
         cardBg: "bg-amber-50/70",
         cardBorder: "border-amber-100",
         infoitemborder: "border border-amber-200",
+    },
+
+    CHANGES_REQUESTED: {
+        label: "Changes Requested",
+        badgeBg: "bg-orange-50",
+        badgeText: "text-orange-700",
+        icon: FaRotateLeft,
+        nodeBg: "bg-orange-500",
+        nodeIcon: FaRotateLeft,
+        cardBg: "bg-orange-50/90",
+        cardBorder: "border-orange-100",
+        infoitemborder: "border border-orange-200",
     },
 
     IN_PROGRESS: {
@@ -85,6 +104,13 @@ const NOTE = {
         icon: FaClock,
         note: "Waiting for you to accept this milestone. Review the requirements and start the work when you are ready.",
         style: "text-sm text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2"
+    },
+
+    CHANGES_REQUESTED: {
+        icon: FaRotateLeft,
+        note: "You have requested changes to this milestone. Waiting for the client to review your feedback, update the milestone details, and send it back for your acceptance.",
+        style:
+            "text-sm text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2",
     },
 
     ACCEPTED: {
@@ -215,6 +241,7 @@ const UploadWork = (
         setShowUploadWorkModal,
         milestoneId,
         contractId,
+        milestoneTitle,
     }
 ) => {
     const [files, setFiles] = useState([]);
@@ -230,17 +257,24 @@ const UploadWork = (
         data: milestoneCreationData,
     } = useUploadWork(contractId);
 
-
-    function Handle_UploadWork() {
+    async function Handle_UploadWork() {
         const data = new FormData();
         data.append("milestoneId", milestoneId);
         data.append("contractId", contractId);
+        data.append("milestoneTitle", milestoneTitle)
 
         files.forEach((file) => {
             data.append("FreelancerAttachments", file);
         });
 
-        uploadWork(data);
+        try {
+            await uploadWork(data);
+            setShowUploadWorkModal(false);
+            setFiles([]);
+            setFileErrors([]);
+        } catch (err) {
+            console.log(err);
+        }
 
     }
 
@@ -309,6 +343,12 @@ const UploadWork = (
         },
     });
 
+    const closeUploadModal = () => {
+        setShowUploadWorkModal(false);
+        setSelectedMilestone(null);
+    };
+
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20 backdrop-blur-sm px-4">
 
@@ -317,11 +357,11 @@ const UploadWork = (
                 {/* Header */}
                 <div className="flex items-center justify-between border-b px-6 py-4">
                     <h2 className="text-lg font-semibold text-slate-800">
-                        Submit work for Milestone 3
+                        Submit work for Milestone: {milestoneTitle}
                     </h2>
                     <button
                         className="text-sm font-semibold text-slate-600 hover:text-red-600 border rounded-md px-3 py-1 transition-all duration-300 ease-in-out"
-                        onClick={() => setShowUploadWorkModal(false)}
+                        onClick={closeUploadModal}
                     >
                         Close
                     </button>
@@ -497,20 +537,20 @@ const Milestone_Timeline_For_Freelancer = ({ milestonesData = [], contractId, })
     const [expandedDescriptions, setExpandedDescriptions] = useState(null);
     const [showFilesModal, setShowFilesModal] = useState(false);
     const [showUploadWorkModal, setShowUploadWorkModal] = useState(false);
+    const [selectedMilestone, setSelectedMilestone] = useState(null);
     const [selectedFiles, setSelectedFiles] = useState({ title: "", files: [] });
+    const [showRevisionModal, setShowRevisionModal] = useState(false);
     const dispatch = useDispatch();
 
     const toggleDescription = (id) => {
         setExpandedDescriptions((prev) => (prev === id ? null : id));
     };
 
-    const { mutate: MilestoneAction } = useHandleMilestone();
+    const { mutate: MilestoneAction } = useHandleMilestone(contractId);
 
     function HandleMilestoneAction(milestoneAction) {
         MilestoneAction(milestoneAction);
     }
-
-    let MilestoneId;
 
     return (
         <div className="space-y-5 rounded-3xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:shadow-xl p-3">
@@ -574,7 +614,7 @@ const Milestone_Timeline_For_Freelancer = ({ milestonesData = [], contractId, })
                             const { milestoneTitle, milestoneDescription, milestoneAmount, milestoneDueDate, milestoneStatus, createdAt,
                                 ClientAttachments, _id: milestoneId, milestoneStartDate, FreelancerAttachments = [] } = mile;
 
-                            MilestoneId = milestoneId;
+
                             const cfg = STATUS_CONFIG[milestoneStatus];
 
                             // for note
@@ -674,7 +714,7 @@ const Milestone_Timeline_For_Freelancer = ({ milestonesData = [], contractId, })
                                                 value={ClientAttachments.length}
                                                 border={cfg?.infoitemborder}
                                                 onClick={() => {
-                                                    setSelectedFiles({ title: "Files You Attached", files: ClientAttachments });
+                                                    setSelectedFiles({ title: "Files Client Attached", files: ClientAttachments });
                                                     setShowFilesModal(true);
                                                 }}
 
@@ -721,7 +761,14 @@ const Milestone_Timeline_For_Freelancer = ({ milestonesData = [], contractId, })
                                                     Accept milestone
                                                 </ActionButton>
 
-                                                <ActionButton onClick={() => actions.onRequestChanges(milestoneId)}>
+                                                <ActionButton
+                                                    onClick={() => {
+                                                        setShowRevisionModal(true);
+                                                        setSelectedMilestone({
+                                                            milestoneId,
+                                                            milestoneTitle,
+                                                        });
+                                                    }}>
                                                     Request changes
                                                 </ActionButton>
 
@@ -741,7 +788,14 @@ const Milestone_Timeline_For_Freelancer = ({ milestonesData = [], contractId, })
 
                                                 <ActionButton
                                                     icon={FiUpload}
-                                                    onClick={() => setShowUploadWorkModal(true)}
+                                                    onClick={() => {
+                                                        setSelectedMilestone({
+                                                            milestoneId,
+                                                            milestoneTitle,
+                                                        });
+
+                                                        setShowUploadWorkModal(true);
+                                                    }}
                                                 >
                                                     Upload Work
 
@@ -750,7 +804,7 @@ const Milestone_Timeline_For_Freelancer = ({ milestonesData = [], contractId, })
                                                 <ActionButton
                                                     variant="files"
                                                     onClick={() => {
-                                                        setSelectedFiles({ title: "Files Submitted by Freelancer", files: FreelancerAttachments });
+                                                        setSelectedFiles({ title: "Files Submitted by You", files: FreelancerAttachments });
                                                         setShowFilesModal(true);
                                                     }}
                                                 >
@@ -818,9 +872,23 @@ const Milestone_Timeline_For_Freelancer = ({ milestonesData = [], contractId, })
                 showUploadWorkModal && (
                     <UploadWork
                         setShowUploadWorkModal={setShowUploadWorkModal}
-                        milestoneId={MilestoneId}
+                        milestoneId={selectedMilestone?.milestoneId}
+                        milestoneTitle={selectedMilestone?.milestoneTitle}
                         contractId={contractId}
+                    />
+                )
+            }
 
+
+            {
+                showRevisionModal && (
+                    <Request_Revision
+                        isOpen={showRevisionModal}
+                        onClose={() => setShowRevisionModal(false)}
+                        onSubmit={(reason) => {
+                            HandleMilestoneAction({ milestoneId: selectedMilestone?.milestoneId, contractId, action: "CHANGES_REQUESTED", reason });
+                            setShowRevisionModal(false);
+                        }}
                     />
                 )
             }

@@ -29,7 +29,14 @@ const notificationSchema = new Schema({
             "BID_RECEIVED", //!freelancer action
             "BID_WITHDRAW", //!freelancer action
             "MESSAGE_RECEIVED", //*client or freelancer action
-           
+            "MILESTONE_CREATED",
+            "MILESTONE_ACCEPTED",
+            "WORK_SUBMITTED",
+            "MILESTONE_APPROVED",
+            "REVISION_REQUESTED",
+            "WORK_UPLOADED",
+            "CHANGES_REQUESTED", // by freelancer for client req for request changes in milestone
+            "CHANGES_IN_MILESTONE", // by client for freelancer req for request changes in milestone
         ],
         required: true
     },

@@ -74,6 +74,7 @@ import Client_Dashboard from "./pages/Navigation/Clients-Navigations/client-prof
 import Client_contracts from "./pages/Navigation/Clients-Navigations/client-profile/Client_contracts.jsx";
 import Client_MYprofile from './pages/Navigation/Clients-Navigations/client-profile/Client_MYprofile.jsx';
 import Error_componet from './components/Error_componet.jsx';
+import useAppSocket from "./hooks/APPsocket/useAppSocket.js";
 
 const router = createBrowserRouter([
   {
@@ -246,8 +247,6 @@ function App() {
 
   const dispatch = useDispatch();
 
-
-
   useEffect(() => {
     dispatch(checkLogin());   // checks token validity
     dispatch(fetchUser());    // fetch user after login
@@ -264,59 +263,8 @@ function App() {
 
   console.log("user in app.jsx", user?._id, "user name", user?.firstName);
 
-  //  SOCKET CONNECTION
-  useEffect(() => {
-    if (!user?._id) return;
-
-    // ! for real-time bid viewed by client in freelancer dashboard.
-    const handleBidViewed = (updatedBid) => {
-      // console.log("👁️ Bid viewed real-time:", updatedBid);
-      dispatch(updateBidLive(updatedBid)); //  update instantly
-    };
-    socket.on("bid_viewed", handleBidViewed);
-
-
-    // ! for real-time add bid in client view all bids.
-    const handleaddBidLive = (newBid) => {
-      // console.log(" New bid received real-time:", newBid);
-      dispatch(addBidLive(newBid)); //  update instantly
-    };
-    socket.on("new_bid", handleaddBidLive);
-
-    // ! for real-time bid status update
-    const handleStatus = ({ bidId, status }) => {
-      dispatch(updateBidStatusLive({ bidId, status }));
-    };
-    socket.on("bid_status_updated", handleStatus);
-
-
-    if (hasRegistered.current) return;
-
-    const handleConnect = () => {
-      console.log("✅ Socket connected:", socket.id);
-      socket.emit("register", user._id);
-      console.log("📡 Socket registered:", user._id);
-      hasRegistered.current = true;
-    };
-
-
-    const handleNotification = (data) => {
-      console.log("🔔 New Notification:", data);
-      dispatch(addNotification(data));
-    };
-    socket.on("new_notification", handleNotification);
-
-    socket.on("connect", handleConnect);
-
-    return () => {
-      socket.off("connect", handleConnect);
-      socket.off("bid_viewed", handleBidViewed);
-      socket.off("new_notification", handleNotification);
-      socket.off("bid_status_updated", handleStatus);
-      socket.off("new_bid", handleaddBidLive);
-    };
-
-  }, [user?._id]);
+  //* SOCKET CONNECTION
+ useAppSocket(socket, user?._id);
 
  return (
   <>

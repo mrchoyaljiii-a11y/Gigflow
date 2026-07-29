@@ -5,10 +5,13 @@ import { getContract } from "../../api/contractAPI";
 export const useContract = (contractId) => {
 
     return useQuery({
-
         queryKey: ["contract", contractId],
-
-        queryFn: () => getContract(contractId),
+        
+        queryFn: () => {
+            console.log("Fetching contract...");
+            console.log("contractId in useContract",contractId);
+            return getContract(contractId);
+        },
 
         enabled: !!contractId, // only run the query if contractId is truthy or available
 

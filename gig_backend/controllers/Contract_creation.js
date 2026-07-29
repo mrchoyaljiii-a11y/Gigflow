@@ -5,12 +5,26 @@ const BidModel = require("../model/BidModel/BidModel");
 const HiredModel = require('../model/freelancer/Hired');
 const uploadToCloudinary = require("../utility/uploadToCloudinary");
 const Notification = require("../model/notification/notification");
-const { getIO, getUsers } = require("../Socket/socket");
+const { getIO } = require("../Socket/socket");
+const sendNotification = require("../utility/SendNotification");
 
 async function generateContractNumber() {
     const count = await contractModel.countDocuments();
     const padded = String(count + 1).padStart(5, "0");
     return `CTR-${padded}`;
+}
+
+
+function emitContractUpdate(contract, eventName, payload) {
+    const io = getIO();
+    const clientId = contract?.clientId?.toString();
+    const freelancerId = contract?.freelancerId?.toString();
+
+    [clientId, freelancerId].forEach((userId) => {
+        if (userId) {
+            io.to(userId).emit(eventName, payload);
+        }
+    });
 }
 
 // handle the hire and create contract process and update the bid status and job status 
@@ -270,7 +284,6 @@ async function Handle_HireFreelancer_CreateContract(req, res) {
     }
 }
 
-
 async function Handle_GetContractById(req, res) {
     try {
         const { contractId } = req.params;
@@ -404,11 +417,24 @@ async function Handle_create_milestone(req, res) {
         // Add milestone to contract
         contract.milestones.push(newMilestone);
 
-
         contract.payment.inpendingAmount += Number(amount);
 
         // Save contract with new milestone
         const updatedContract = await contract.save();
+
+        emitContractUpdate(contract, "milestone_created", {
+            contractId: contract._id.toString(),
+            milestone: newMilestone,
+            message: "New milestone created",
+        });
+
+        await sendNotification({
+            userId: contract.freelancerId,
+            senderId: req.user._id,
+            type: "MILESTONE_CREATED",
+            message: `A new milestone "${title}" has been created for you.`,
+            link: `/contracts/${contractId}`,
+        });
 
         res.status(201).json({
             success: true,
@@ -418,7 +444,6 @@ async function Handle_create_milestone(req, res) {
                 contract: updatedContract,
             },
         });
-
 
     } catch (error) {
         console.error("Error creating milestone:", error);
@@ -442,9 +467,15 @@ async function Handle_create_milestone(req, res) {
 async function Handle_milestone_Actions(req, res) {
     try {
 
-        const { milestoneId, contractId, action } = req.body;
+        const { milestoneId, contractId, action, reason } = req.body;
 
         const userId = req.user.id; // Logged-in user from auth middleware
+
+
+        let notificationTargetId = null;
+        let notificationType = "MILESTONE_UPDATED";
+        let notificationMessage = "";
+        let notificationLink = `/contracts/${contractId}`;
 
 
         if (!milestoneId || !contractId || !action) {
@@ -468,15 +499,13 @@ async function Handle_milestone_Actions(req, res) {
 
         // Check User Role
 
-        const isClient =
-            contract.clientId.toString() === userId;
+        const isClient = contract.clientId.toString() === userId;
 
 
-        const isFreelancer =
-            contract.freelancerId.toString() === userId;
+        const isFreelancer = contract.freelancerId.toString() === userId;
 
 
-        console.log("is client", isClient, "is Freelancer", isFreelancer);
+        // console.log("is client", isClient, "is Freelancer", isFreelancer);
 
 
         if (!isClient && !isFreelancer) {
@@ -517,8 +546,7 @@ async function Handle_milestone_Actions(req, res) {
                 }
 
                 if (
-                    milestone.milestoneStatus !==
-                    "PENDING_ACCEPTANCE"
+                    milestone.milestoneStatus !== "PENDING_ACCEPTANCE"
                 ) {
                     return res.status(400).json({
                         success: false,
@@ -528,8 +556,11 @@ async function Handle_milestone_Actions(req, res) {
 
                 milestone.milestoneStatus = "IN_PROGRESS";
 
-                milestone.milestoneStartDate =
-                    new Date();
+                milestone.milestoneStartDate = new Date();
+
+                notificationTargetId = contract.clientId;
+                notificationType = "MILESTONE_ACCEPTED";
+                notificationMessage = `Freelancer accepted milestone "${milestone.milestoneTitle}".`;
 
                 break;
 
@@ -560,8 +591,10 @@ async function Handle_milestone_Actions(req, res) {
 
                 milestone.milestoneStatus = "SUBMITTED";
 
-                milestone.milestoneSubmittedDate =
-                    new Date();
+                milestone.milestoneSubmittedDate = new Date();
+                notificationTargetId = contract.clientId;
+                notificationType = "WORK_SUBMITTED";
+                notificationMessage = `Freelancer submitted work for milestone "${milestone.milestoneTitle}".`;
                 break;
 
             // Client Approve Milestone
@@ -588,11 +621,12 @@ async function Handle_milestone_Actions(req, res) {
 
                 }
 
-                milestone.milestoneStatus ="APPROVED";
+                milestone.milestoneStatus = "APPROVED";
 
-                milestone.milestoneApprovedDate =
-                    new Date();
-
+                milestone.milestoneApprovedDate = new Date();
+                notificationTargetId = contract.freelancerId;
+                notificationType = "MILESTONE_APPROVED";
+                notificationMessage = `Client approved milestone "${milestone.milestoneTitle}".`;
                 break;
 
             // Client Request Revision
@@ -621,9 +655,55 @@ async function Handle_milestone_Actions(req, res) {
                 }
 
                 milestone.milestoneStatus = "REVISION_REQUESTED";
+                notificationTargetId = contract.freelancerId;
+                notificationType = "REVISION_REQUESTED";
+                notificationMessage = `Client requested revision for milestone "${milestone.milestoneTitle}".`;
 
                 break;
 
+            case "CHANGES_REQUESTED":
+
+                if (!isFreelancer) {
+                    return res.status(403).json({
+                        success: false,
+                        message:
+                            "Only Freelancer can changes request ."
+                    });
+                }
+
+
+                if (
+                    milestone.milestoneStatus !== "PENDING_ACCEPTANCE"
+
+                ) {
+
+                    return res.status(400).json({
+                        success: false,
+                        message:
+                            "Only pending milestones can be changes requested."
+                    });
+
+                }
+
+                if (!reason || !reason.trim()) {
+                    return res.status(400).json({
+                        success: false,
+                        message: "Please provide a reason for requesting changes."
+                    });
+                }
+
+                milestone.milestoneStatus = "CHANGES_REQUESTED";
+
+                milestone.changeRequest = {
+                    reason: reason.trim(),
+                    ChangeRequestDate: new Date(),
+                };
+
+                notificationTargetId = contract.freelancerId;
+                notificationType = "CHANGES_REQUESTED";
+                notificationMessage = `Freelancer Changes requested for milestone "${milestone.milestoneTitle}" Please review and update the milestone.`;
+
+                break;
             // Invalid Action
 
             default:
@@ -635,13 +715,30 @@ async function Handle_milestone_Actions(req, res) {
 
         }
 
-        // Save only once
-
         await contract.save();
+
+        emitContractUpdate(contract, "milestone_updated", {
+            contractId: contract._id.toString(),
+            milestoneId: milestone._id.toString(),
+            action,
+            milestoneStatus: milestone.milestoneStatus,
+            milestone,
+            message: `Milestone ${action} successfully.`,
+        });
+
+        if (notificationTargetId) {
+            await sendNotification({
+                userId: notificationTargetId,
+                senderId: req.user._id,
+                type: notificationType,
+                message: notificationMessage,
+                link: notificationLink,
+            });
+        }
 
         return res.status(200).json({
             success: true,
-            message:`"Milestone ${action} successfully."`,
+            message: `"Milestone ${action} successfully."`,
             data: {
                 action,
                 milestone
@@ -661,7 +758,7 @@ async function Handle_milestone_Actions(req, res) {
 
             success: false,
 
-            message:`"Failed to update milestone."`,
+            message: `"Failed to update milestone."`,
 
             error: error.message
 
@@ -670,10 +767,10 @@ async function Handle_milestone_Actions(req, res) {
     }
 }
 
-
 async function Handle_UploadWork(req, res) {
     try {
         const { milestoneId, contractId } = req.body;
+        console.log("work upload data:", req.body);
 
         const files = req.files || [];
 
@@ -722,7 +819,7 @@ async function Handle_UploadWork(req, res) {
                     fileType: result.format,
                 }));
 
-                console.log("Uploaded files:", uploadedFiles);
+                // console.log("Uploaded files:", uploadedFiles);
             } catch (uploadError) {
                 console.error('Cloudinary upload error:', uploadError);
                 return res.status(400).json({
@@ -733,11 +830,25 @@ async function Handle_UploadWork(req, res) {
             }
         }
 
-
         milestone.FreelancerAttachments.push(...uploadedFiles);
 
-
         await contract.save();
+
+        emitContractUpdate(contract, "milestone_work_uploaded", {
+            contractId: contract._id.toString(),
+            milestoneId: milestone._id.toString(),
+            milestone,
+            uploadedFiles,
+            message: "Work uploaded successfully",
+        });
+
+        await sendNotification({
+            userId: contract.clientId,
+            senderId: req.user._id,
+            type: "WORK_UPLOADED",
+            message: `Freelancer uploaded work for milestone "${milestone.milestoneTitle}".`,
+            link: `/contracts/${contractId}`,
+        });
 
         res.status(201).json({
             success: true,
@@ -757,8 +868,123 @@ async function Handle_UploadWork(req, res) {
     }
 }
 
+// update milestone for freelancer request changes , request 
+async function Handle_update_milestone(req, res) {
+    try {
+        const { title, description, amount, dueDate, milestoneId } = req.body;
+        const contractId = req.params.contractId;
+        const files = req.files || [];
+
+           if (!title || !description || !amount || !dueDate ||!milestoneId || !contractId ) {
+            return res.status(400).json({
+                success: false,
+                message: 'Missing required fields',
+            });
+        }
+
+        const contract = await contractModel.findById(contractId);
+        if (!contract) {
+            return res.status(404).json({
+                success: false,
+                message: 'Contract not found',
+            });
+        }
+
+        if (contract.clientId.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to create milestones for this contract',
+            });
+        }
+
+        let uploadedFiles = [];
+
+        if (files.length > 0) {
+            try {
+                const uploadPromises = files.map((file) =>
+                    uploadToCloudinary(file.buffer, file.originalname)
+                );
+
+                const cloudinaryResults = await Promise.all(uploadPromises);
+
+                // console.log('Cloudinary results:', cloudinaryResults);
+
+                uploadedFiles = cloudinaryResults.map((result) => ({
+                    url: result.secure_url,
+                    // downloadUrl: result.url,
+                    publicId: result.public_id,
+                    fileName: result.display_name,
+                    fileSize: result.bytes,
+                    fileType: result.format,
+                }));
+            } catch (uploadError) {
+                console.error('Cloudinary upload error:', uploadError);
+                return res.status(400).json({
+                    success: false,
+                    message: 'File upload failed',
+                    error: uploadError.message,
+                });
+            }
+        }
+
+        const milestone = contract.milestones.find((milestone) => milestone._id.toString() === milestoneId);
+
+        if (!milestone) {
+            return res.status(404).json({
+                success: false,
+                message: 'Milestone not found',
+            });
+        }
+
+        milestone.milestoneTitle = title;
+        milestone.milestoneDescription = description;
+        milestone.milestoneAmount = amount;
+        milestone.milestoneDueDate = dueDate;
+        milestone.ClientAttachments.push(...uploadedFiles);
+        milestone.milestoneStatus = "PENDING_ACCEPTANCE";
+
+        await contract.save();
+
+        emitContractUpdate(contract, "milestone_updated", {
+            contractId: contract._id.toString(),
+            milestoneId: milestone._id.toString(),
+            milestone,
+            uploadedFiles,
+            message: "Milestone updated successfully for request changes !",
+        });
+
+
+        await sendNotification({
+            userId: contract.freelancerId,
+            senderId: req.user._id,
+            type: "CHANGES_IN_MILESTONE",
+            message: `Client updated milestone "${milestone.milestoneTitle}" for your request changes.`,
+            link: `/contracts/${contractId}`,
+        });
+
+        console.log("Updated milestone:", milestone);
+
+        res.status(201).json({
+            success: true,
+            message: "Milestone updated successfully for request changes !",
+            data: {
+                milestone,
+            },
+        });
+
+
+    } catch (error) {
+        console.log("error in update milestone", error)
+         res.status(500).json({
+            success: false,
+            message: "Failed to update milestone for request changes !",
+            error: error.message
+        });
+    }
+
+}
 
 module.exports = {
     Handle_HireFreelancer_CreateContract, Handle_GetContractById, Handle_create_milestone,
-    Handle_GetAllContracts, Handle_milestone_Actions, Handle_UploadWork
+    Handle_GetAllContracts, Handle_milestone_Actions, Handle_UploadWork, Handle_update_milestone
 }

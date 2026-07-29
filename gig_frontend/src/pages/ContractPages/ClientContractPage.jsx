@@ -47,9 +47,6 @@ const ClientContractPage = () => {
     // console.log("showTost",showTost);
     const dispatch = useDispatch();
 
-    if (showTost.show) {
-        console.log("inside if showTost", showTost);
-    }
 
     const { contractId } = useParams();
 
