@@ -1,17 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { FaBolt } from "react-icons/fa6";
+import { HiBellAlert } from "react-icons/hi2";
 import { IoMdNotifications } from "react-icons/io";
 import { FaUserCircle } from "react-icons/fa";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from 'react-redux'
 import { LogoutUser } from '../../../redux/Auth/Auth.js';
 import { showToast } from '../../../redux/Tost/Tost_slice.js'
+import {socket} from '../../../socket/socket.js'
 
 import {
   FiHome, FiUser, FiTrendingUp, FiHeart, FiCreditCard, FiLink, FiSun, FiSettings, FiLogOut, FiChevronDown
 } from "react-icons/fi";
-
-import Notification_show from '../../Notification_show.jsx'
 
 import { fetchNotifications, Show_notification_component } from '../../../redux/Notification_actions/Notifications_actions.js'
 
@@ -86,7 +86,7 @@ const UserDropdown = ({ userData, handleLogout }) => {
 
       {/* ── dropdown panel ── */}
       {open && (
-        <div className="absolute -right-18 top-11 z-50 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="absolute -right-8 top-11 z-50 w-64 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
 
           {/* user info */}
           <div className="flex items-center gap-3 px-4 py-4 border-b border-gray-100">
@@ -207,10 +207,11 @@ const Header = () => {
     e.preventDefault();
     e.stopPropagation();
     try {
+      console.log("Logout");
       const result = await dispatch(LogoutUser()).unwrap();
+      socket.disconnect();
       dispatch(showToast(result.message));
       navigate("/")
-
     }
     catch (err) {
       console.error('Logout error', err);
@@ -220,29 +221,60 @@ const Header = () => {
   return (
     <header className='sticky top-0 z-50 w-full bg-white/70 backdrop-blur-sm border-b border-white/20 shadow-sm mb-1.5'>
 
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center py-4">
+      <div className="max-w-9xl mx-auto px-12 flex justify-end items-center py-4">
 
-        <div className="right flex items-center gap-1">
+        {/* <div className="right flex items-center gap-1">
           <NavLink to='/home' className="flex items-center gap-1 text-primary font-bold text-lg">
-          <div className="icon bg-primary text-white p-2 rounded-md">
-            <FaBolt />
-          </div>
-          <h1 className="text-xl font-semibold">GigFlow</h1>
+            <div className="icon bg-primary text-white p-2 rounded-md">
+              <FaBolt />
+            </div>
+            <h1 className="text-xl font-semibold">GigFlow</h1>
           </NavLink>
-        </div>
+        </div> */}
 
         {/* Right Section */}
         <div className="left flex items-center gap-4">
 
-          <div className="notification cursor-pointer relative"
+          {/* bell notification */}
+          <div
+            className="relative"
             onClick={() => {
               dispatch(Show_notification_component(true));
               dispatch(fetchNotifications());
-            }}>
-            <p className="absolute right-0 -top-1 bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center">{unreadCount}</p>
-            <IoMdNotifications size={32} />
-          </div>
+            }}
+          >
+            <button
+              className="group relative flex h-11 w-11 items-center justify-center
+               rounded-full bg-blue-50 border border-blue-100
+               shadow-sm transition-all duration-200
+               hover:bg-blue-100 hover:border-blue-300
+               hover:shadow-md"
+            >
+              {/* Bell */}
+              <HiBellAlert
+                size={22}
+                className="text-blue-600 transition-all duration-200 group-hover:text-blue-700 hover:scale-110 "
+              />
 
+              {/* Animated Notification Dot */}
+              {unreadCount > 0 && (
+                <>
+                  {/* Notification Count */}
+                  <span
+                    className="absolute -top-1.5 -right-1.5
+                     min-w-[20px] h-5 px-1
+                     flex items-center justify-center
+                     rounded-full bg-gradient-to-r from-blue-600 to-blue-500
+                     text-[10px] font-bold text-white
+                     border-2 border-white shadow-lg"
+                  >
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-60 animate-ping"></span>
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                </>
+              )}
+            </button>
+          </div>
 
           {!islogin ? (
             <NavLink

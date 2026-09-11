@@ -62,7 +62,7 @@ const UserSchema = new mongoose.Schema(
     },
 
     company: {
-      
+
       name: {
         type: String,
         trim: true,
@@ -77,7 +77,7 @@ const UserSchema = new mongoose.Schema(
         type: String,
         trim: true,
       },
-      
+
       industryType: {
         type: String,
         trim: true,
@@ -113,7 +113,7 @@ const UserSchema = new mongoose.Schema(
     },
 
     phoneNo: {
-     countryCode: {
+      countryCode: {
         type: String,
         trim: true,
       },
@@ -124,7 +124,12 @@ const UserSchema = new mongoose.Schema(
         minlength: 10,
         maxlength: 10,
         pattern: /^[0-9]{10}$/,
-     }
+      }
+    },
+
+    lastSeen: {
+      type: Date,
+      default: null,
     },
 
     password: {

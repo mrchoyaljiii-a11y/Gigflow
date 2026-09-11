@@ -150,6 +150,11 @@ const FreelancerSchema = new mongoose.Schema(
             public_id: String,
         },
 
+        lastSeen: {
+            type: Date,
+            default: null,
+        },
+
         // PORTFOLIO for freelancer
 
         portfolioProjects: [

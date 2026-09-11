@@ -5,7 +5,6 @@ import { IoBagCheckOutline,IoSend  } from "react-icons/io5";
 import { CiCirclePlus } from "react-icons/ci";
 import { FaRegMessage } from "react-icons/fa6";
 import { CgProfile } from "react-icons/cg";
-
 import { useDispatch, useSelector } from 'react-redux'
 
 const Footer = () => {
@@ -134,8 +133,6 @@ const Footer = () => {
           <span className="text-xs mt-1">Explore</span>
         </NavLink>
 
-
-       
         <NavLink
           to="/home/my-proposals"
           className={({ isActive }) =>
@@ -167,7 +164,7 @@ const Footer = () => {
             <MdTravelExplore size={22} />
             <span className="text-xs mt-1">Find Freelancers</span>
           </div>
-        </NavLink> */}
+        </NavLink> 
 
 
         {/* Profile */}

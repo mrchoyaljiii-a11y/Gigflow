@@ -20,9 +20,7 @@ const ClientDashboard = () => {
     refetch: jobsRefetch,
   } = useGetJobs();
 
-  console.log("client jobs in client dashboard", clientjobs?.Clientjobs);
-
-
+  // console.log("client jobs in client dashboard", clientjobs?.Clientjobs);
 
   const dispatch = useDispatch();
   // fetching the freelancer data for showing in recommended freelancers

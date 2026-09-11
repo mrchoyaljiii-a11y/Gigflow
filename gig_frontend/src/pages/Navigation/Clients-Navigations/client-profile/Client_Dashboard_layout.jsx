@@ -93,18 +93,16 @@ const Client_Dashboard_layout = () => {
             to: "/Client/AccountSettings"
 
         }
-
-
     ];
 
     const navigate = useNavigate();
 
     return (
-        <div className="main flex flex-col lg:flex-row gap-4 min-h-screen bg-slate-50 relative p-3">
+        <div className="main max-w-8xl mx-auto px-6 flex flex-col lg:flex-row gap-3 min-h-screen bg-slate-50 relative ml-2 ">
 
             {/* Sidebar */}
             <aside
-                className=" side_bar w-full lg:w-52 bg-white rounded-2xl flex lg:flex-col overflow-x-auto lg:overflow-visible gap-3  shadow-md p-3 lg:sticky lg:top-20 self-start"
+                className=" side_bar w-full lg:w-50 bg-white rounded-2xl flex lg:flex-col overflow-x-auto lg:overflow-visible gap-3 shadow-md p-3 lg:sticky lg:top-20 self-start ml-2"
             >
                 <nav className="flex lg:flex-col gap-2 w-full">
                     {navLinks.slice(0,5).map((link) => (

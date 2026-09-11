@@ -21,7 +21,7 @@ const Detailed_bid = () => {
 
     const { BidsByFreelancer } = useSelector((state) => state.BidSlice);
 
-    console.log("bids_by_freelancer in detailed bid page", BidsByFreelancer);
+    // console.log("bids_by_freelancer in detailed bid page", BidsByFreelancer);
 
     const FilterBidById = () => BidsByFreelancer.filter((bid) => bid._id === bid_id);
 
@@ -43,7 +43,7 @@ const Detailed_bid = () => {
 
             {
                 FilterBidById().map((bid) => {
-                    const { bid: bid_by_freelancer, description, status, _id: bid_id, timeline: freelancer_timeline, gigId: { jobtitle, projectCategory, timeline, _id, jobDescription, minBudget, maxBudget, skills, clientId } } = bid;
+                    const { bid: bid_by_freelancer, description, status, _id: bid_id, timeline: freelancer_timeline, gigId: { jobtitle, projectCategory, timeline, _id, jobDescription, Budget, skills, clientId } } = bid;
                     const createdAt = new Date(bid.createdAt);
                     const formattedDate = createdAt.toLocaleDateString("en-US", {
                         year: "numeric",
@@ -78,7 +78,7 @@ const Detailed_bid = () => {
 
                                         <div className="flex items-center gap-2 text-on-surface-variant">
                                             <span className="material-symbols-outlined text-lg"><MdPayments /></span>
-                                            <span className="text-sm font-medium">Est. Budget: {`$${minBudget} - $${maxBudget}`}</span>
+                                            <span className="text-sm font-medium ">Budget: {`$${Budget} `}</span>
                                         </div>
 
                                     </div>
@@ -152,7 +152,7 @@ const Detailed_bid = () => {
                                             <div className="ml-auto flex items-center gap-8 text-right">
                                                 <div>
                                                     <p className="text-xs font-bold text-on-surface-variant uppercase tracking-tighter">Budget</p>
-                                                    <p className="text-lg font-bold text-primary">${maxBudget} max</p>
+                                                    <p className="text-lg font-bold text-primary">${Budget} max</p>
                                                 </div>
                                                 <div>
                                                     <p className="text-xs font-bold text-on-surface-variant uppercase tracking-tighter">Location</p>

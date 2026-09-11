@@ -1,5 +1,6 @@
 import api from "./axios";
 
+
 // create contract
 export const createContract = async (contractData) => {
     try {
@@ -16,6 +17,7 @@ export const createContract = async (contractData) => {
 // get a sepecific contract
 export const getContract = async (contractId) => {
 
+
     const response = await api.get(
         `/api/contracts/${contractId}`
     );
@@ -23,9 +25,14 @@ export const getContract = async (contractId) => {
         throw new Error(response.data.message || "Failed to fetch contract");
     }
 
-    console.log("Fetched Contract:", response.data.contract);
+    // console.log("Fetched Contract:", response.data.contract);
+    // if (response.data.success) {
+    //     dispatch(setInitialStatus([
+    //         response.data.otherUser
+    //     ]));
+    // }
 
-    return response.data.contract;
+    return response.data;
 };
 
 // get all contracts

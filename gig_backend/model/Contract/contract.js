@@ -45,7 +45,8 @@ const MilestoneSchema = new Schema({
             "PENDING_ACCEPTANCE",      // created but work not started
             "CHANGES_REQUESTED",      // Freelancer requested milestone updates
             "IN_PROGRESS",  // freelancer working
-            "SUBMITTED",    // freelancer submitted work
+            "SUBMITTED", // freelancer submitted work
+            "REVISION_REQUESTED",   // client requested revisions for submitted work/milestone
             "APPROVED",     // client approved
             "RELEASED",     // payment released milestone complete
             "CANCELLED",    // milestone cancelled
@@ -55,14 +56,18 @@ const MilestoneSchema = new Schema({
     },
 
 
-    changeRequest :{
+    changeRequest: {
         reason: String,
         ChangeRequestDate: Date
     },
 
+    revisionRequest: {
+        reason: String,
+        RevisionRequestDate: Date
+    },
+
     ClientAttachments: [Schema.Types.Mixed],
     FreelancerAttachments: [Schema.Types.Mixed],
-
 
     createdAt: {
         type: Date,
@@ -89,6 +94,59 @@ paymentSchema = new Schema({
     },
 
 })
+
+ActivitySchema = new Schema({
+    actor: {
+        type: String,
+        enum: ["CLIENT", "FREELANCER", "SYSTEM"]
+    },
+
+    action: {
+        type: String,
+        enum: [
+            // Contract
+            "CONTRACT_CREATED",
+            "CONTRACT_COMPLETED",
+            "CONTRACT_CANCELLED",
+
+            // Milestones
+            "MILESTONE_CREATED",
+            "MILESTONE_UPDATED",
+            "MILESTONE_DELETED",
+            "MILESTONE_ACCEPTED",
+            "MILESTONE_APPROVED",
+
+            // Work
+            "WORK_SUBMITTED",
+            "WORK_RESUBMITTED",
+            "WORK_APPROVED",
+
+            // Revision / Changes
+            "REVISION_REQUESTED",   // Client requests revisions to submitted work
+            "CHANGES_REQUESTED",    // Freelancer requests changes to a milestone
+
+            // Files
+            "FILES_UPLOADED",
+
+            // Payments
+            "PAYMENT_RELEASED",
+
+            // Reviews
+            "REVIEW_LEFT"
+        ]
+    },
+
+    milestoneId: {
+        type: Schema.Types.ObjectId,
+        required: true
+    },
+
+    message: String,
+
+    createdAt: Date
+})
+
+
 
 const ContractSchema = new Schema({
 
@@ -165,6 +223,9 @@ const ContractSchema = new Schema({
     milestones: [MilestoneSchema],
 
     payment: paymentSchema,
+
+    activities: [ActivitySchema],
+
 
 },
     {

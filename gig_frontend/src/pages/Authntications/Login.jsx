@@ -8,6 +8,7 @@ import { loginUser } from '../../redux/Auth/Auth'
 import { showToast } from '../../redux/Tost/Tost_slice'
 import { fetchUser } from '../../redux/getUser/User'
 
+
 const Login = () => {
     const { register, handleSubmit, formState: { errors } } = useForm();
     // const [loading, setLoading] = useState(false);
@@ -24,11 +25,11 @@ const Login = () => {
         try {
             // console.log("Login data:", data);
             const result = await dispatch(loginUser(data)).unwrap();
-            console.log("Login result:", result);
+            // console.log("Login result:", result);
             if (result.success) {
                 dispatch(showToast(result.message));
 
-               // fetch user details after login
+                // fetch user details after login
                 setTimeout(() => {
                     dispatch(fetchUser());
                 }, 100);

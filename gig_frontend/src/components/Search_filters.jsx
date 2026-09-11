@@ -30,7 +30,6 @@ const Search_filters = () => {
   }, [dispatch, appliedSearch, pageNo]);
 
 
-
   const onSubmit = (data) => {
     const searchText = data.search.toLowerCase();
 

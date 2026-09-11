@@ -9,10 +9,10 @@ import {
   FiDownload,
   FiArrowRight,
 } from "react-icons/fi";
-
-
+import { useSelector } from "react-redux";
 
 const PaymentOverview = ({ payment }) => {
+
   const stats = [
     {
       title: "Total Budget",
@@ -47,20 +47,17 @@ const PaymentOverview = ({ payment }) => {
       ring: "ring-purple-100",
     },
   ];
+
+
+  const { user: loginUser } = useSelector((state) => state.auth);
+  // console.log("user in contract page loginUser", loginUser);
+  const IsClient = loginUser?.role === "client";
+  const IsFreelancer = loginUser?.role === "freelancer";
+
   return (
     <div
-      className="
-        rounded-3xl
-        border
-        border-slate-200
-        bg-white
-        shadow-lg
-
-        transition-all
-        duration-300
-
-        hover:shadow-xl
-      "
+      className=" rounded-3xl border border-slate-200 bg-white shadow-lg transition-all duration-300
+ hover:shadow-xl "
     >
       {/* Header */}
 
@@ -77,26 +74,7 @@ const PaymentOverview = ({ payment }) => {
 
         <div className="flex flex-wrap gap-3">
           <button
-            className="
-              flex
-              items-center
-              gap-2
-
-              rounded-xl
-
-              border
-
-              border-slate-200
-
-              px-4
-              py-2
-
-              text-sm
-              font-medium
-
-              transition-all
-
-              hover:bg-slate-100
+            className=" flex items-center gap-2 rounded-xl border border-slate-200 px-3 py-2 text-s font-medium transition-all hover:bg-slate-100
             "
           >
             <FiDownload />
@@ -104,36 +82,14 @@ const PaymentOverview = ({ payment }) => {
             Export
           </button>
 
-          <button
-            className="
-              flex
-              items-center
-              gap-2
-
-              rounded-xl
-
-              bg-blue-600
-
-              px-5
-              py-2.5
-
-              font-medium
-
-              text-white
-
-              shadow-lg
-
-              transition-all
-
-              hover:-translate-y-0.5
-              hover:bg-blue-700
-              hover:shadow-xl
+        { IsClient && <button
+            className=" flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 font-medium text-white shadow-lg transition-all hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-xl
             "
           >
             <FiCreditCard />
 
             Add Funds
-          </button>
+          </button>}
         </div>
       </div>
 
@@ -144,45 +100,14 @@ const PaymentOverview = ({ payment }) => {
           {stats.map((item) => (
             <div
               key={item.title}
-              className="
-                group
-
-                rounded-2xl
-
-                border
-
-                border-slate-200
-
-                p-5
-
-                transition-all
-                duration-300
-
-                hover:-translate-y-1
-                hover:border-blue-200
-                hover:shadow-lg
+              className=" group rounded-2xl border border-slate-200 p-5 transition-all duration-300 hover:-translate-y-1 hover:border-blue-200 hover:shadow-lg
               "
             >
               <div className="flex items-center justify-between">
                 <div
                   className={`
                     ${item.bg}
-                    ${item.ring}
-
-                    flex
-                    h-12
-                    w-12
-                    items-center
-                    justify-center
-
-                    rounded-2xl
-
-                    ring-4
-
-                    transition-all
-                    duration-300
-
-                    group-hover:scale-110
+                    ${item.ring} flex h-10 w-10 items-center justify-center rounded-2xl ring-4 transition-al duration-300 group-hover:scale-110
                   `}
                 >
                   <span className={item.color}>{item.icon}</span>
@@ -205,8 +130,6 @@ const PaymentOverview = ({ payment }) => {
         </div>
 
         {/* Escrow Progress */}
-
-
 
       </div>
     </div>

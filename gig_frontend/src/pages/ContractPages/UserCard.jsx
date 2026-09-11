@@ -69,7 +69,7 @@ const UserCard = ({ freelancerData, clientData, isLoading, UserRole }) => {
     company,
   } = clientData || {};
 
-  console.log("clientData",clientData)
+  // console.log("clientData",clientData)
 
 
   //client data for freelancer side

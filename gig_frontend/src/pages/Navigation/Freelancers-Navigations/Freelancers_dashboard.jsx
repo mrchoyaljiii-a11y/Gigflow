@@ -73,7 +73,7 @@ const Freelancers_dashboard = () => {
 
     return (
         <div>
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20">
+            <main className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 ml-3">
                 <div className="grid grid-cols-12 gap-8">
                     {/*  Main Content Area  */}
                     <div className="col-span-12 lg:col-span-8 space-y-8 ">
@@ -81,7 +81,7 @@ const Freelancers_dashboard = () => {
                         {/*  Welcome Hero  */}
                         <section className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-white   
                          border border-primary/10 p-8">
-                            <div className="relative z-10 max-w-lg">
+                            <div className="relative z-10 max-w-8xl">
                                 <h1 className="text-3xl font-extrabold text-slate-900  mb-3">👋 Hi {user?.firstName || "Freelancer"}, Ready to land your next project?</h1>
                                 <p className="text-slate-600  mb-6 text-lg">Your profile performance is up by 15% this week. Check out the latest opportunities curated just for you.</p>
                                 <div className="flex flex-wrap gap-3">
@@ -97,9 +97,11 @@ const Freelancers_dashboard = () => {
                         {/*  Stats Overview */}
                         <section className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
                             {
-                                StatsOverview.map((item) => {
+                                StatsOverview.map((item,index) => {
                                     return (
-                                        <div className="bg-white  p-5 rounded-xl border border-slate-200  shadow-sm">
+                                        <div className="bg-white  p-5 rounded-xl border border-slate-200  shadow-sm"
+                                            key={index}
+                                        >
                                             <p className="text-sm text-slate-500  font-medium">{item.heading}</p>
                                             <div className="flex items-end justify-between mt-1">
                                                 <h3 className="text-2xl font-bold">{item.data}</h3>

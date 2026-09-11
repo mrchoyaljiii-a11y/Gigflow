@@ -64,7 +64,7 @@ const userSlice = createSlice({
         sepecificFreelancerData: null,
         freelancerData: {},
         recommendedFreelancers: [],
-
+        
         userLoading: false,
         freelancerLoading: false,
         specificFreelancerLoading: false,

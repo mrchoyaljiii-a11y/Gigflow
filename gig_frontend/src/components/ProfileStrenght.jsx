@@ -67,7 +67,7 @@ const ProfileStrenght = () => {
 
     const whichDataused = role === "freelancer" ? profilestrengthData : profilestrengthData_client;
 
-    console.log("role of user", role);
+    // console.log("role of user", role);
 
     const sortedProfileStrength = Object.entries(
         whichDataused

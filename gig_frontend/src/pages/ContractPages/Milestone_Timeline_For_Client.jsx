@@ -41,7 +41,6 @@ import { getRemeningDaysStatus } from "../../utils/RemaingDays.js";
 import { useHandleMilestone } from "../../hooks/contract_releted/milestone_releted/useHandleMilestone.js";
 import { useUpdateMilestone } from "../../hooks/contract_releted/milestone_releted/useUpdateMilestone.js";
 
-
 // desides the overall design of card according to sattus
 const STATUS_CONFIG = {
     PENDING_ACCEPTANCE: {
@@ -91,6 +90,19 @@ const STATUS_CONFIG = {
         cardBorder: "border-purple-100",
         infoitemborder: "border border-purple-200",
     },
+
+    REVISION_REQUESTED: {
+        label: "Revision Requested",
+        badgeBg: "bg-rose-50",
+        badgeText: "text-rose-700",
+        icon: FaUndoAlt,
+        nodeBg: "bg-rose-500",
+        nodeIcon: FaUndoAlt,
+        cardBg: "bg-rose-50/70",
+        cardBorder: "border-rose-100",
+        infoitemborder: "border border-rose-200",
+    },
+
     APPROVED: {
         label: "Approved",
         badgeBg: "bg-violet-50",
@@ -176,17 +188,18 @@ const NOTE = {
         style:
             "text-sm text-purple-700 bg-purple-50 border border-purple-200 rounded-lg px-3 py-2",
     },
+
+    REVISION_REQUESTED: {
+        icon: FaUndoAlt,
+        note: "You requested revisions for this submission. The freelancer has been notified and is expected to update the work and submit a revised version for your review.",
+        style:"text-sm text-rose-700 bg-rose-50 border border-rose-200 rounded-lg px-3 py-2",
+    },
+
     APPROVED: {
         icon: FaThumbsUp,
         note: "You have approved the submitted work. This milestone has been successfully accepted, and payment will be released according to your platform's payment process.",
         style:
             "text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2",
-    },
-    REVISION_REQUESTED: {
-        icon: FaUndoAlt,
-        note: "You requested revisions. Waiting for the freelancer to update and resubmit the work.",
-        style:
-            "text-sm text-orange-700 bg-orange-50 border border-orange-200 rounded-lg px-3 py-2",
     },
 
     COMPLETED: {
@@ -631,6 +644,7 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
     const [AddmilestoneOpen, setAddmilestone] = useState(false);
     const [showFilesModal, setShowFilesModal] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState({ title: "", files: [] });
+    const [selectedMilestone, setSelectedMilestone] = useState(null);
     const [showRevisionModal, setShowRevisionModal] = useState(false);
     const [expandedDescriptions, setExpandedDescriptions] = useState(null);
     const [expandedChangeRequests, setExpandedChangeRequests] = useState(null);
@@ -732,7 +746,8 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                                 milestoneStartDate,
                                 ClientAttachments = [],
                                 FreelancerAttachments = [],
-                                changeRequest
+                                changeRequest,
+                                revisionRequest,
                             } = item;
 
                             const cfg = STATUS_CONFIG[milestoneStatus];
@@ -944,10 +959,18 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                                                 <ActionButton
                                                     variant="danger"
                                                     icon={FiAlertTriangle}
-                                                    onClick={() => setShowRevisionModal(true)}
+                                                    onClick={() => {
+                                                        setShowRevisionModal(true);
+
+                                                        setSelectedMilestone({
+                                                            milestoneId,
+                                                            milestoneTitle,
+                                                        });
+
+                                                    }}
 
                                                 >
-                                                    Request Changes
+                                                    Request Revisions
                                                 </ActionButton>
 
                                                 <ActionButton
@@ -955,12 +978,77 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                                                     icon={FaEye}
                                                     onClick={() => {
                                                         setSelectedFiles({ title: "Files Submitted by Freelancer", files: FreelancerAttachments });
+
                                                         setShowFilesModal(true);
                                                     }}
                                                 >
                                                     Review Submission
                                                 </ActionButton>
                                             </div>
+                                        )}
+
+                                        {/* revision request by you for freelancer sunmitted work  */}
+                                        {milestoneStatus === "REVISION_REQUESTED" && (
+                                            <>
+                                                {/* Change Request */}
+                                                <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50 p-4">
+                                                    <div className="flex items-start gap-3">
+                                                        <FiAlertTriangle className="mt-1 text-lg text-rose-600" />
+
+                                                        <div className="flex-1">
+                                                            <h4 className="font-semibold text-rose-800">
+                                                                Your Revision Request
+                                                            </h4>
+
+                                                            {/* request revision reason description */}
+
+                                                            <div className="mt-2 mb-4">
+                                                                <p className="text-[0.9rem] font-medium text-gray-400 uppercase tracking-wide mb-1">
+                                                                    Reason from you:
+                                                                </p>
+
+                                                                <div
+                                                                    className={`overflow-hidden transition-all duration-600 ease-in-out ${expandedChangeRequests === index ? "max-h-96" : "max-h-18"
+                                                                        }`}
+                                                                >
+                                                                    <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
+                                                                        {revisionRequest?.reason}
+                                                                    </p>
+                                                                </div>
+
+                                                                {revisionRequest?.reason.length > 150 && (
+                                                                    <button
+                                                                        onClick={() => toggleChangeRequest(index)}
+                                                                        className="mt-2 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                                                                    >
+                                                                        {expandedChangeRequests === index ? "Show Less" : "Show More"}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+
+                                                            {revisionRequest?.RevisionRequestDate && (
+                                                                <p className="mt-2 text-xs text-orange-500 border p-1 rounded w-fit">
+                                                                    Requested on : {new Date(revisionRequest?.RevisionRequestDate).toLocaleDateString()}
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Actions */}
+                                                <div className="mt-4 flex flex-wrap gap-2">
+                                                    <ActionButton
+                                                        variant="files"
+                                                        icon={FaEye}
+                                                        onClick={() => {
+                                                            setSelectedFiles({ title: "Files Submitted by Freelancer", files: FreelancerAttachments });
+                                                            setShowFilesModal(true);
+                                                        }}
+                                                    >
+                                                        View Submitted Files
+                                                    </ActionButton>
+                                                </div>
+                                            </>
                                         )}
 
                                         {milestoneStatus === "APPROVED" && (
@@ -1017,7 +1105,10 @@ const Milestone_Timeline_For_Client = ({ milestonesData = [], contractId, setSho
                     <Request_Revision
                         isOpen={showRevisionModal}
                         onClose={() => setShowRevisionModal(false)}
-
+                        onSubmit={(reason) => {
+                            HandleMilestoneAction({ milestoneId: selectedMilestone?.milestoneId, contractId, action: "REVISION_REQUESTED", reason });
+                            setShowRevisionModal(false);
+                        }}
                     />
                 )
             }

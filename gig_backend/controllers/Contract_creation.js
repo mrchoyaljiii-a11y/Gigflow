@@ -6,7 +6,10 @@ const HiredModel = require('../model/freelancer/Hired');
 const uploadToCloudinary = require("../utility/uploadToCloudinary");
 const Notification = require("../model/notification/notification");
 const { getIO } = require("../Socket/socket");
-const sendNotification = require("../utility/SendNotification");
+
+const createNotification = require("../utility/Notifications/createNotification");
+
+const emitNotification = require("../utility/Notifications/emitNotification");
 
 async function generateContractNumber() {
     const count = await contractModel.countDocuments();
@@ -116,22 +119,19 @@ async function Handle_HireFreelancer_CreateContract(req, res) {
         switch (DeleveryDate.deliveryUnit) {
             case "days":
                 deadline.setDate(
-                    deadline.getDate() +
-                    DeleveryDate.deliveryTime
+                    deadline.getDate() + DeleveryDate.deliveryTime
                 );
                 break;
 
             case "weeks":
                 deadline.setDate(
-                    deadline.getDate() +
-                    DeleveryDate.deliveryTime * 7
+                    deadline.getDate() + DeleveryDate.deliveryTime * 7
                 );
                 break;
 
             case "months":
                 deadline.setMonth(
-                    deadline.getMonth() +
-                    DeleveryDate.deliveryTime
+                    deadline.getMonth() + DeleveryDate.deliveryTime
                 );
                 break;
         }
@@ -175,7 +175,17 @@ async function Handle_HireFreelancer_CreateContract(req, res) {
                         totalReleased: 0,
                         remainingAmount: agreedPrice,
                         inpendingAmount: 0
-                    }
+                    },
+
+                    activities: [
+                        {
+                            actor: "SYSTEM",
+                            action: "CONTRACT_CREATED",
+                            message: `Congratulations! Contract created for ${gigName}`,
+                            createdAt: new Date()
+                        }
+                    ]
+
                 }
             ],
             { session }
@@ -226,9 +236,21 @@ async function Handle_HireFreelancer_CreateContract(req, res) {
 
         //    console.log("8. Committing");
 
+        const notification = await createNotification({
+            userId: freelancerId,
+            senderId: req.user._id,
+            type: "BID_ACCEPTED",
+            message: `Congratulations! You have been hired for "${gigName}" 🎉`,
+            link: "/my-proposals"
+        },
+            session
+        );
+
         await session.commitTransaction();
 
         session.endSession();
+
+        emitNotification(notification);
 
         // console.log("9. Committed");
 
@@ -242,20 +264,6 @@ async function Handle_HireFreelancer_CreateContract(req, res) {
                 bidId,
                 status: "hired"
             }
-        );
-
-        const notification =
-            await Notification.create({
-                userId: freelancerId,
-                senderId: req.user._id,
-                type: "BID_ACCEPTED",
-                message: `Congratulations! You have been hired for "${gigName}" 🎉`,
-                link: "/my-proposals"
-            });
-
-        io.to(freelancerId.toString()).emit(
-            "new_notification",
-            notification
         );
 
         return res.status(201).json({
@@ -284,12 +292,16 @@ async function Handle_HireFreelancer_CreateContract(req, res) {
     }
 }
 
+// Get contract by id || get contract of logged-in user 
 async function Handle_GetContractById(req, res) {
     try {
+        // console.log("Controller PID:", process.pid);
+
         const { contractId } = req.params;
+
         const contract = await contractModel.findById(contractId)
-            .populate('freelancerId', 'firstName  lastName  professionalTitle  country  state  email  experienceLevel freelanerSkills  languages linkedInLink  websitelink profileSummary  profileImage rate  hourlyRate workExperience  education professionalCategory  createdAt ')
-            .populate('clientId', 'firstName  lastName country  state  email createdAt languages clientType clientRole clientSummary company Links profileImage phoneNo');
+            .populate('freelancerId', 'firstName  lastName  professionalTitle  country  state  email  experienceLevel freelanerSkills  languages linkedInLink  websitelink profileSummary  profileImage rate  hourlyRate workExperience  education professionalCategory  createdAt lastSeen')
+            .populate('clientId', 'firstName  lastName country  state  email createdAt languages clientType clientRole clientSummary company Links profileImage phoneNo lastSeen');
 
         if (!contract) {
             return res.status(404).json({
@@ -297,9 +309,22 @@ async function Handle_GetContractById(req, res) {
                 message: "Contract not found"
             });
         }
+        const userId = req.user.id; // Logged-in user
+
+        const isClient = contract.clientId._id.toString() === userId;
+
+        const isFreelancer = contract.freelancerId._id.toString() === userId;
+
+        if (!isClient && !isFreelancer) {
+            return res.status(403).json({
+                success: false,
+                message: "Unauthorized access.",
+            });
+        }
+
         res.status(200).json({
             success: true,
-            contract
+            contract,
         });
     }
     catch (error) {
@@ -315,7 +340,7 @@ async function Handle_GetContractById(req, res) {
 async function Handle_GetAllContracts(req, res) {
     try {
 
-        console.log("inside all contracts handler");
+        // console.log("inside all contracts handler");
 
         const userId = req.user._id;
 
@@ -344,10 +369,14 @@ async function Handle_GetAllContracts(req, res) {
     }
 }
 
+// client create milestone with files(optional)
 async function Handle_create_milestone(req, res) {
+
+    const session = await mongoose.startSession();
+
     try {
-        // console.log(req.body)
-        // console.log(req.files)   
+        console.log(req.body)
+        console.log(req.files)   
         const { title, description, amount, dueDate, contractId } = req.body;
 
         const files = req.files || [];
@@ -359,18 +388,19 @@ async function Handle_create_milestone(req, res) {
             });
         }
 
-        const contract = await contractModel.findById(contractId);
-        if (!contract) {
-            return res.status(404).json({
+        const milestoneAmount = Number(amount);
+
+        if (!Number.isFinite(milestoneAmount)) {
+            return res.status(400).json({
                 success: false,
-                message: 'Contract not found',
+                message: "Milestone amount must be a valid number",
             });
         }
 
-        if (contract.clientId.toString() !== req.user._id.toString()) {
-            return res.status(403).json({
+        if (milestoneAmount <= 0) {
+            return res.status(400).json({
                 success: false,
-                message: 'You are not authorized to create milestones for this contract',
+                message: "Milestone amount must be greater than 0",
             });
         }
 
@@ -384,16 +414,17 @@ async function Handle_create_milestone(req, res) {
 
                 const cloudinaryResults = await Promise.all(uploadPromises);
 
-                // console.log('Cloudinary results:', cloudinaryResults);
+                console.log('Cloudinary results:', cloudinaryResults);
 
                 uploadedFiles = cloudinaryResults.map((result) => ({
                     url: result.secure_url,
-                    // downloadUrl: result.url,
                     publicId: result.public_id,
                     fileName: result.display_name,
                     fileSize: result.bytes,
                     fileType: result.format,
+                    created_at: result.created_at,
                 }));
+
             } catch (uploadError) {
                 console.error('Cloudinary upload error:', uploadError);
                 return res.status(400).json({
@@ -404,6 +435,65 @@ async function Handle_create_milestone(req, res) {
             }
         }
 
+        // start transection
+        await session.startTransaction();
+
+        const contract = await contractModel
+            .findById(contractId)
+            .session(session);
+
+        if (!contract) {
+            await session.abortTransaction();
+            return res.status(404).json({
+                success: false,
+                message: 'Contract not found',
+            });
+        }
+
+        if (contract.clientId.toString() !== req.user._id.toString()) {
+            await session.abortTransaction();
+
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to create milestones for this contract',
+            });
+        }
+
+        const remainingAmount =
+            Number(contract.payment?.remainingAmount || 0);
+
+        // No remaining amount
+        if (remainingAmount <= 0) {
+            await session.abortTransaction();
+
+            return res.status(400).json({
+                success: false,
+                title: "NO REMAINING AMOUNT",
+                message:
+                    "There is no remaining amount available in this contract. You cannot add another milestone.",
+                data: {
+                    remainingAmount: 0,
+                },
+            });
+        }
+
+        // Milestone amount exceeds remaining amount
+        if (milestoneAmount > remainingAmount) {
+            await session.abortTransaction();
+
+            return res.status(400).json({
+                success: false,
+                title: "AMOUNT EXCEEDS REMAINING AMOUNT",
+                message:
+                    `The milestone amount exceeds the remaining contract balance. You have ₹${remainingAmount} remaining, but this milestone requires ₹${milestoneAmount}.`,
+                data: {
+                    remainingAmount,
+                    requestedAmount: milestoneAmount,
+                },
+            });
+        }
+
+        //Create milestone
         const newMilestone = {
             milestoneTitle: title,
             milestoneDescription: description,
@@ -417,23 +507,44 @@ async function Handle_create_milestone(req, res) {
         // Add milestone to contract
         contract.milestones.push(newMilestone);
 
-        contract.payment.inpendingAmount += Number(amount);
+        contract.payment.inpendingAmount = Number(contract.payment.inpendingAmount || 0) + milestoneAmount;
 
-        // Save contract with new milestone
-        const updatedContract = await contract.save();
+        // Update remaining amount
+        contract.payment.remainingAmount = remainingAmount - milestoneAmount;
 
-        emitContractUpdate(contract, "milestone_created", {
-            contractId: contract._id.toString(),
-            milestone: newMilestone,
-            message: "New milestone created",
-        });
+        const createdMilestone = contract.milestones[contract.milestones.length - 1];
 
-        await sendNotification({
+        // Add activity for milestone creation
+        contract.activities.push({
+            actor: "CLIENT",
+            action: "MILESTONE_CREATED",
+            milestoneId: createdMilestone._id,
+            message: `A new milestone "${title}" has been created for you.`,
+            createdAt: new Date(),
+        })
+
+        // save contract with new milestone and activity
+        const updatedContract = await contract.save({ session });
+
+
+        const notification = await createNotification({
             userId: contract.freelancerId,
             senderId: req.user._id,
             type: "MILESTONE_CREATED",
             message: `A new milestone "${title}" has been created for you.`,
             link: `/contracts/${contractId}`,
+        }, session);
+
+
+        await session.commitTransaction();
+
+        emitNotification(notification); /// send notification
+
+
+        emitContractUpdate(contract, "milestone_created", {
+            contractId: contract._id.toString(),
+            milestone: newMilestone,
+            message: "New milestone created",
         });
 
         res.status(201).json({
@@ -447,14 +558,21 @@ async function Handle_create_milestone(req, res) {
 
     } catch (error) {
         console.error("Error creating milestone:", error);
+
+        if (session.inTransaction()) {
+            console.log("Aborting transaction... in Handle_create_milestone");
+            await session.abortTransaction();
+        }
+
         res.status(500).json({
             success: false,
             message: "Failed to create milestone",
             error: error.message
         });
-
     }
-
+    finally {
+        session.endSession();
+    }
 }
 
 // Freelancer milestone actions
@@ -465,6 +583,9 @@ async function Handle_create_milestone(req, res) {
 // Handle Milestone Actions (Client + Freelancer)
 
 async function Handle_milestone_Actions(req, res) {
+
+    const session = await mongoose.startSession();
+
     try {
 
         const { milestoneId, contractId, action, reason } = req.body;
@@ -477,6 +598,12 @@ async function Handle_milestone_Actions(req, res) {
         let notificationMessage = "";
         let notificationLink = `/contracts/${contractId}`;
 
+        // for activity
+
+        let actor = null;
+        let message = null;
+        let Activityaction = null;
+
 
         if (!milestoneId || !contractId || !action) {
             return res.status(400).json({
@@ -485,12 +612,17 @@ async function Handle_milestone_Actions(req, res) {
             });
         }
 
+        // start transection
+        await session.startTransaction();
 
         // Find contract
-        const contract = await contractModel.findById(contractId);
+        const contract = await contractModel
+            .findById(contractId)
+            .session(session);
 
 
         if (!contract) {
+            await session.abortTransaction();
             return res.status(404).json({
                 success: false,
                 message: "Contract not found."
@@ -509,6 +641,9 @@ async function Handle_milestone_Actions(req, res) {
 
 
         if (!isClient && !isFreelancer) {
+
+            await session.abortTransaction();
+
             return res.status(403).json({
                 success: false,
                 message: "You are not authorized for this contract."
@@ -524,6 +659,7 @@ async function Handle_milestone_Actions(req, res) {
 
 
         if (!milestone) {
+            await session.abortTransaction();
             return res.status(404).json({
                 success: false,
                 message: "Milestone not found."
@@ -539,6 +675,7 @@ async function Handle_milestone_Actions(req, res) {
             case "accept":
 
                 if (!isFreelancer) {
+                    await session.abortTransaction();
                     return res.status(403).json({
                         success: false,
                         message: "Only freelancer can accept milestone."
@@ -548,6 +685,7 @@ async function Handle_milestone_Actions(req, res) {
                 if (
                     milestone.milestoneStatus !== "PENDING_ACCEPTANCE"
                 ) {
+                    await session.abortTransaction();
                     return res.status(400).json({
                         success: false,
                         message: "This milestone cannot be accepted."
@@ -562,6 +700,10 @@ async function Handle_milestone_Actions(req, res) {
                 notificationType = "MILESTONE_ACCEPTED";
                 notificationMessage = `Freelancer accepted milestone "${milestone.milestoneTitle}".`;
 
+                actor = "FREELANCER";
+                message = `Freelancer accepted milestone "${milestone.milestoneTitle}".`;
+                Activityaction = "MILESTONE_ACCEPTED";
+
                 break;
 
             // Freelancer Submit Work
@@ -569,6 +711,7 @@ async function Handle_milestone_Actions(req, res) {
             case "submit_work":
 
                 if (!isFreelancer) {
+                    await session.abortTransaction();
                     return res.status(403).json({
                         success: false,
                         message: "Only freelancer can submit work."
@@ -581,6 +724,7 @@ async function Handle_milestone_Actions(req, res) {
                     milestone.milestoneStatus !== "REVISION_REQUESTED"
                 ) {
 
+                    await session.abortTransaction();
                     return res.status(400).json({
                         success: false,
                         message:
@@ -595,6 +739,10 @@ async function Handle_milestone_Actions(req, res) {
                 notificationTargetId = contract.clientId;
                 notificationType = "WORK_SUBMITTED";
                 notificationMessage = `Freelancer submitted work for milestone "${milestone.milestoneTitle}".`;
+
+                actor = "FREELANCER";
+                message = `Freelancer submitted work for milestone "${milestone.milestoneTitle}".`;
+                Activityaction = "WORK_SUBMITTED";
                 break;
 
             // Client Approve Milestone
@@ -602,6 +750,7 @@ async function Handle_milestone_Actions(req, res) {
             case "approved":
 
                 if (!isClient) {
+                    await session.abortTransaction();
                     return res.status(403).json({
                         success: false,
                         message: "Only client can approve milestone."
@@ -612,6 +761,8 @@ async function Handle_milestone_Actions(req, res) {
                 if (
                     milestone.milestoneStatus !== "SUBMITTED"
                 ) {
+
+                    await session.abortTransaction();
 
                     return res.status(400).json({
                         success: false,
@@ -627,13 +778,18 @@ async function Handle_milestone_Actions(req, res) {
                 notificationTargetId = contract.freelancerId;
                 notificationType = "MILESTONE_APPROVED";
                 notificationMessage = `Client approved milestone "${milestone.milestoneTitle}".`;
+
+                actor = "CLIENT";
+                message = `Client approved milestone "${milestone.milestoneTitle}".`;
+                Activityaction = "MILESTONE_APPROVED";
                 break;
 
             // Client Request Revision
 
-            case "request_revision":
+            case "REVISION_REQUESTED":
 
                 if (!isClient) {
+                    await session.abortTransaction();
                     return res.status(403).json({
                         success: false,
                         message:
@@ -646,6 +802,8 @@ async function Handle_milestone_Actions(req, res) {
                     milestone.milestoneStatus !== "SUBMITTED"
                 ) {
 
+                    await session.abortTransaction();
+
                     return res.status(400).json({
                         success: false,
                         message:
@@ -655,15 +813,26 @@ async function Handle_milestone_Actions(req, res) {
                 }
 
                 milestone.milestoneStatus = "REVISION_REQUESTED";
+
+                milestone.revisionRequest = {
+                    reason: reason.trim(),
+                    RevisionRequestDate: new Date(),
+                };
+
                 notificationTargetId = contract.freelancerId;
                 notificationType = "REVISION_REQUESTED";
-                notificationMessage = `Client requested revision for milestone "${milestone.milestoneTitle}".`;
+                notificationMessage = `Client requested revision for milestone "${milestone.milestoneTitle} review the work and update the milestone accordingly.".`;
+
+                actor = "CLIENT";
+                message = `Client requested revision for milestone "${milestone.milestoneTitle} review the work and update the milestone accordingly.".`;
+                Activityaction = "REVISION_REQUESTED";
 
                 break;
 
             case "CHANGES_REQUESTED":
 
                 if (!isFreelancer) {
+                    await session.abortTransaction();
                     return res.status(403).json({
                         success: false,
                         message:
@@ -676,6 +845,7 @@ async function Handle_milestone_Actions(req, res) {
                     milestone.milestoneStatus !== "PENDING_ACCEPTANCE"
 
                 ) {
+                    await session.abortTransaction();
 
                     return res.status(400).json({
                         success: false,
@@ -686,6 +856,7 @@ async function Handle_milestone_Actions(req, res) {
                 }
 
                 if (!reason || !reason.trim()) {
+                    await session.abortTransaction();
                     return res.status(400).json({
                         success: false,
                         message: "Please provide a reason for requesting changes."
@@ -699,15 +870,20 @@ async function Handle_milestone_Actions(req, res) {
                     ChangeRequestDate: new Date(),
                 };
 
-                notificationTargetId = contract.freelancerId;
+                notificationTargetId = contract.clientId;
                 notificationType = "CHANGES_REQUESTED";
                 notificationMessage = `Freelancer Changes requested for milestone "${milestone.milestoneTitle}" Please review and update the milestone.`;
 
+                actor = "FREELANCER";
+                message = `Freelancer Changes requested for milestone "${milestone.milestoneTitle}" Please review and update the milestone.`;
+                Activityaction = "CHANGES_REQUESTED";
                 break;
+
             // Invalid Action
 
             default:
 
+                await session.abortTransaction();
                 return res.status(400).json({
                     success: false,
                     message: "Invalid milestone action."
@@ -715,7 +891,34 @@ async function Handle_milestone_Actions(req, res) {
 
         }
 
-        await contract.save();
+        contract.activities.push({
+            contractId,
+            actor,
+            action: Activityaction,
+            milestoneId: milestone._id,
+            message,
+            createdAt: new Date()
+        });
+
+        await contract.save({
+            session
+        });
+
+        if (notificationTargetId) {
+            const notification = await createNotification({
+                userId: notificationTargetId,
+                senderId: req.user._id,
+                type: notificationType,
+                message: notificationMessage,
+                link: notificationLink,
+            }, session);
+
+            emitNotification(notification);
+        }
+
+        //! Commit the transaction
+        await session.commitTransaction();
+
 
         emitContractUpdate(contract, "milestone_updated", {
             contractId: contract._id.toString(),
@@ -726,15 +929,6 @@ async function Handle_milestone_Actions(req, res) {
             message: `Milestone ${action} successfully.`,
         });
 
-        if (notificationTargetId) {
-            await sendNotification({
-                userId: notificationTargetId,
-                senderId: req.user._id,
-                type: notificationType,
-                message: notificationMessage,
-                link: notificationLink,
-            });
-        }
 
         return res.status(200).json({
             success: true,
@@ -748,6 +942,12 @@ async function Handle_milestone_Actions(req, res) {
 
     }
     catch (error) {
+
+        if (session.inTransaction()) {
+
+            console.log("Aborting transaction in HandleMilestoneAction");
+            await session.abortTransaction();
+        }
 
         console.error(
             "Milestone Action Error:",
@@ -765,9 +965,17 @@ async function Handle_milestone_Actions(req, res) {
         });
 
     }
+    finally {
+
+        session.endSession();
+    }
 }
 
+//files upload by freelancer to client as a work
 async function Handle_UploadWork(req, res) {
+
+    const session = await mongoose.startSession();
+
     try {
         const { milestoneId, contractId } = req.body;
         console.log("work upload data:", req.body);
@@ -780,23 +988,7 @@ async function Handle_UploadWork(req, res) {
                 message: 'Contract , milestone and files are required',
             });
         }
-        const contract = await contractModel.findById(contractId);
 
-        if (!contract) {
-            return res.status(404).json({
-                success: false,
-                message: 'Contract not found',
-            });
-        }
-
-        const milestone = contract.milestones.find((milestone) => milestone._id.toString() === milestoneId);
-
-        if (!milestone) {
-            return res.status(404).json({
-                success: false,
-                message: 'Milestone not found',
-            });
-        }
 
         let uploadedFiles = [];
 
@@ -817,6 +1009,7 @@ async function Handle_UploadWork(req, res) {
                     fileName: result.display_name,
                     fileSize: result.bytes,
                     fileType: result.format,
+                    created_at: result.created_at,
                 }));
 
                 // console.log("Uploaded files:", uploadedFiles);
@@ -830,9 +1023,58 @@ async function Handle_UploadWork(req, res) {
             }
         }
 
+        //! start transaction
+        await session.startTransaction();
+
+        const contract = await contractModel
+            .findById(contractId)
+            .session(session);
+
+
+        if (!contract) {
+            await session.abortTransaction();
+            return res.status(404).json({
+                success: false,
+                message: 'Contract not found',
+            });
+        }
+
+        const milestone = contract.milestones.find((milestone) => milestone._id.toString() === milestoneId);
+
+        if (!milestone) {
+            await session.abortTransaction();
+            return res.status(404).json({
+                success: false,
+                message: 'Milestone not found',
+            });
+        }
+
         milestone.FreelancerAttachments.push(...uploadedFiles);
 
-        await contract.save();
+        contract.activities.push({
+            actor: "FREELANCER",
+            action: "FILES_UPLOADED",
+            milestoneId: milestone._id,
+            message: `Freelancer uploaded work files for milestone "${milestone.milestoneTitle}".`,
+            createdAt: new Date(),
+        });
+
+        await contract.save({
+            session
+        });
+
+        const notification = await createNotification({
+            userId: contract.clientId,
+            senderId: req.user._id,
+            type: "WORK_UPLOADED",
+            message: `Freelancer uploaded work for milestone "${milestone.milestoneTitle}".`,
+            link: `/contracts/${contractId}`,
+        }, session);
+
+
+        await session.commitTransaction();
+
+        emitNotification(notification);
 
         emitContractUpdate(contract, "milestone_work_uploaded", {
             contractId: contract._id.toString(),
@@ -842,13 +1084,6 @@ async function Handle_UploadWork(req, res) {
             message: "Work uploaded successfully",
         });
 
-        await sendNotification({
-            userId: contract.clientId,
-            senderId: req.user._id,
-            type: "WORK_UPLOADED",
-            message: `Freelancer uploaded work for milestone "${milestone.milestoneTitle}".`,
-            link: `/contracts/${contractId}`,
-        });
 
         res.status(201).json({
             success: true,
@@ -860,42 +1095,38 @@ async function Handle_UploadWork(req, res) {
 
     } catch (error) {
         console.log("Error in Handle_UploadWork:", error);
+        if (session.inTransaction()) {
+            await session.abortTransaction();
+        }
         res.status(500).json({
             success: false,
             message: "Failed to upload work!",
             error: error.message
         });
+    } finally {
+
+        await session.endSession();
+
     }
 }
 
 // update milestone for freelancer request changes , request 
 async function Handle_update_milestone(req, res) {
+
+    const session = await mongoose.startSession();
+
     try {
         const { title, description, amount, dueDate, milestoneId } = req.body;
         const contractId = req.params.contractId;
         const files = req.files || [];
 
-           if (!title || !description || !amount || !dueDate ||!milestoneId || !contractId ) {
+        if (!title || !description || !amount || !dueDate || !milestoneId || !contractId) {
             return res.status(400).json({
                 success: false,
                 message: 'Missing required fields',
             });
         }
 
-        const contract = await contractModel.findById(contractId);
-        if (!contract) {
-            return res.status(404).json({
-                success: false,
-                message: 'Contract not found',
-            });
-        }
-
-        if (contract.clientId.toString() !== req.user._id.toString()) {
-            return res.status(403).json({
-                success: false,
-                message: 'You are not authorized to create milestones for this contract',
-            });
-        }
 
         let uploadedFiles = [];
 
@@ -927,9 +1158,34 @@ async function Handle_update_milestone(req, res) {
             }
         }
 
+
+        //! start transaction
+        await session.startTransaction();
+
+        const contract = await contractModel
+            .findById(contractId)
+            .session(session);
+
+        if (!contract) {
+            await session.abortTransaction();
+            return res.status(404).json({
+                success: false,
+                message: 'Contract not found',
+            });
+        }
+
+        if (contract.clientId.toString() !== req.user._id.toString()) {
+            await session.abortTransaction();
+            return res.status(403).json({
+                success: false,
+                message: 'You are not authorized to create milestones for this contract',
+            });
+        }
+
         const milestone = contract.milestones.find((milestone) => milestone._id.toString() === milestoneId);
 
         if (!milestone) {
+            await session.abortTransaction();
             return res.status(404).json({
                 success: false,
                 message: 'Milestone not found',
@@ -943,7 +1199,29 @@ async function Handle_update_milestone(req, res) {
         milestone.ClientAttachments.push(...uploadedFiles);
         milestone.milestoneStatus = "PENDING_ACCEPTANCE";
 
-        await contract.save();
+        contract.activities.push({
+            actor: "CLIENT",
+            action: "MILESTONE_UPDATED",
+            milestoneId: milestone._id,
+            message: `Client updated milestone "${milestone.milestoneTitle}" after requested changes.`,
+            createdAt: new Date(),
+        });
+
+        await contract.save({ session });
+
+        const notification = await createNotification({
+            userId: contract.freelancerId,
+            senderId: req.user._id,
+            type: "CHANGES_IN_MILESTONE",
+            message: `Client updated milestone : "${milestone.milestoneTitle}" for your request changes. Now you can Accept it.`,
+            link: `/contracts/${contractId}`,
+        }, session);
+
+
+        await session.commitTransaction();
+
+
+        emitNotification(notification);
 
         emitContractUpdate(contract, "milestone_updated", {
             contractId: contract._id.toString(),
@@ -953,16 +1231,7 @@ async function Handle_update_milestone(req, res) {
             message: "Milestone updated successfully for request changes !",
         });
 
-
-        await sendNotification({
-            userId: contract.freelancerId,
-            senderId: req.user._id,
-            type: "CHANGES_IN_MILESTONE",
-            message: `Client updated milestone "${milestone.milestoneTitle}" for your request changes.`,
-            link: `/contracts/${contractId}`,
-        });
-
-        console.log("Updated milestone:", milestone);
+        // console.log("Updated milestone:", milestone);
 
         res.status(201).json({
             success: true,
@@ -975,11 +1244,19 @@ async function Handle_update_milestone(req, res) {
 
     } catch (error) {
         console.log("error in update milestone", error)
-         res.status(500).json({
+        if (session.inTransaction()) {
+            await session.abortTransaction();
+        }
+
+        res.status(500).json({
             success: false,
             message: "Failed to update milestone for request changes !",
             error: error.message
         });
+    } finally {
+
+        await session.endSession();
+
     }
 
 }

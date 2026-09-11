@@ -110,14 +110,14 @@ async function GetAllbids(req, res) {
 // get the bids by freelancerId
 async function GetBidsByFreelancer(req, res) {
     try {
-        console.log("Received freelancerId:", req.params.freelancerId);
+        // console.log("Received freelancerId:", req.params.freelancerId);
         
         const bids = await BidModel.find({ freelancerId: req.params.freelancerId }).populate({
             path: "gigId",
-            select: "jobtitle projectCategory timeline jobDescription skills minBudget maxBudget clientId",
+            select: "jobtitle projectCategory timeline jobDescription skills Budget clientId",
             populate: {
                 path: "clientId",
-                select: "firstName LastName country state company email profileImage" // adjust based on your User schema
+                select: "firstName LastName country state company email profileImage Budget" // adjust based on your User schema
             }
         });
         // const bidsCount = bids.length;

@@ -4,19 +4,13 @@ import {
   createBrowserRouter,
 } from "react-router-dom";
 
-import { io } from "socket.io-client";
-
-const socket = io("http://localhost:3000", {
-  transports: ["websocket"],
-  autoConnect: true,
-  withCredentials: true,
-});
+import { socket } from './socket/socket.js'
 
 import { useDispatch, useSelector } from "react-redux";
 import "./style/App.css";
 
 
-import Layout from "./components/Layout";
+import Layout from "./components/Layouts/Layout.jsx";
 // ShowToast
 
 import ShowToast from './components/Toasts/ShowToast.jsx';
@@ -58,14 +52,13 @@ import { addNotification, fetchNotifications } from "./redux/Notification_action
 import { updateBidLive, updateBidStatusLive, addBidLive } from './redux/Bid/Bid_slice.js';
 import Detailed_jobInfo from "./pages/client_releted/Detailed_jobInfo.jsx";
 
-import Freelancre_own_profile from './pages/Navigation/Freelancers-Navigations/Freelaner_Profile/Freelancre_own_profile.jsx';
-import Second_Layout from "./components/Second_Layout.jsx";
+import Freelancer_dashboard_layout from './pages/Navigation/Freelancers-Navigations/Freelaner_Profile/Freelancer_dashboard_layout.jsx';
+import Second_Layout from "./components/Layouts/Second_Layout.jsx";
 import Profile_section from "./pages/Navigation/Freelancers-Navigations/Freelaner_Profile/Profile_section.jsx";
 import Dashboard_section from "./pages/Navigation/Freelancers-Navigations/Freelaner_Profile/Dashboard_section.jsx";
 
 //contract pages
-import ClientContractPage from './pages/ContractPages/ClientContractPage.jsx'
-
+import ContractPage from './pages/ContractPages/ContractPage.jsx'
 
 //apis
 import { useGetClientInfo } from './hooks/Client_releted/useGetClientInfo.js'
@@ -75,203 +68,248 @@ import Client_contracts from "./pages/Navigation/Clients-Navigations/client-prof
 import Client_MYprofile from './pages/Navigation/Clients-Navigations/client-profile/Client_MYprofile.jsx';
 import Error_componet from './components/Error_componet.jsx';
 import useAppSocket from "./hooks/APPsocket/useAppSocket.js";
+import Notification_show from "./components/Notification_show.jsx";
+import GlobalLayout from "./components/Layouts/GlobalLayout.jsx";
+
 
 const router = createBrowserRouter([
   {
     path: "*",
     element: <Error_componet type="404" />
   },
-  /*  PUBLIC LANDING PAGE */
-  {
-    path: "/",
-    element: <First_page />,
-  },
 
-  /*  AUTH */
   {
-    path: "/login",
-    element: <Login />,
-  },
-  {
-    path: "/signup",
-    element: <SignUp />,
-  },
-
-  // freelancer own profile + header with no footer
-  {
-    path: '/freelancer_own_profile',
-    element: (<Second_Layout />
-    ),
-
+    element: <GlobalLayout />,
     children: [
+
+      /*  PUBLIC LANDING PAGE */
       {
-        path: '',
-        element: (<Freelancre_own_profile />),
+        path: "/",
+        element: <First_page />, // Landing page
+      },
+
+      /*  AUTH */
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/signup",
+        element: <SignUp />,
+      },
+
+      // freelancer own profile + header with no footer
+      {
+        path: '/freelancer_own_profile',
+        element: (<Second_Layout />
+        ),
+
         children: [
           {
-            index: true,
-            element: (<Profile_section />)
-          },
-          {
-            path: 'dashboard',
-            element: (<Dashboard_section />)
-          }
-        ]
-      }
-    ]
-  },
-
-
-  // client profile + header with no footer
-  {
-    path: '/Client',
-    element: (<Second_Layout />
-    ),
-
-    children: [
-      {
-        path: '',
-        element: (<Client_Dashboard_layout />),
-        children: [
-          {
-
-            index: true,
-            element: (<Client_Dashboard />)
-          },
-          {
-            path: "/Client/Contracts",
-            element: <Client_contracts />
-          },
-          {
-            path: "/Client/MyProfile",
-            element: <Client_MYprofile />
+            path: '',
+            element: (<Freelancer_dashboard_layout />),
+            children: [
+              {
+                index: true,
+                element: (<Profile_section />)
+              },
+              {
+                path: 'dashboard',
+                element: (<Dashboard_section />)
+              }
+            ]
           }
         ]
       },
-    ]
-  },
 
-  /*  logged-in  */
-  {
-    path: "/home",
-    element: (
-      <ProtectedRoute>
-        <Layout />
-      </ProtectedRoute>
-    ),
 
-    children: [
+      // client profile + header with no footer
       {
-        path: "",
-        element: <Home />,
-      },
-      {
-        path: "my-gigs",
-        element: <MyGigs />,
-      },
+        path: '/Client',
+        element: (<Second_Layout />
+        ),
 
-      {
-        path: "profile",
-        element: <Profile />,
-      },
-      {
-        path: "Find_freelancers",
-        element: <Freelancer_page />,
-      },
-      {
-        path: "detailed_gig/:id",
-        element: <Detailed_gig />,
-      },
-      {
-        path: "bids/:gig_id",
-        element: <AllBids />,
-      },
-      {
-        path: 'deshboard',
-        element: <ClientDashboard />
-      },
-      {
-        path: 'job_posting',
-        element: <Job_posting />
+        children: [
+          {
+            path: '',
+            element: (<Client_Dashboard_layout />),
+            children: [
+              {
+
+                index: true,
+                element: (<Client_Dashboard />)
+              },
+              {
+                path: "/Client/Contracts",
+                element: <Client_contracts />
+              },
+              {
+                path: "/Client/MyProfile",
+                element: <Client_MYprofile />
+              }
+            ]
+          },
+        ]
       },
 
+      /*  logged-in  */
       {
-        path: "my-proposals",
-        element: <Myproposals />
+        path: "/home",
+        element: (
+          <ProtectedRoute>
+            <Layout />
+          </ProtectedRoute>
+        ),
+
+        children: [
+          {
+            path: "",
+            element: <Home />,
+          },
+          {
+            path: "my-gigs",
+            element: <MyGigs />,
+          },
+
+          {
+            path: "profile",
+            element: <Profile />,
+          },
+          {
+            path: "Find_freelancers",
+            element: <Freelancer_page />,
+          },
+          {
+            path: "detailed_gig/:id",
+            element: <Detailed_gig />,
+          },
+          {
+            path: "bids/:gig_id",
+            element: <AllBids />,
+          },
+          {
+            path: 'deshboard',
+            element: <ClientDashboard />
+          },
+          {
+            path: 'job_posting',
+            element: <Job_posting />
+          },
+
+          {
+            path: "my-proposals",
+            element: <Myproposals />
+          },
+
+          {
+            path: 'detailed_job_info/:job_id',
+            element: <Detailed_jobInfo />
+          },
+
+          // freelancer routes
+          {
+            path: "explore",
+            element: (<div
+            className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 ml-3"
+            >
+              <Search_filters />
+              <Job_section />
+            </div>)
+          },
+          {
+            path: 'freelancer/detailed-bid/:bid_id',
+            element: <Detailed_bid />
+          }
+        ],
+      },
+
+      /*  profile pages */
+      {
+        path: "/createAccount",
+        element: <ProfileForm />,
+      },
+      {
+        path: "/userProfile",
+        element: <UserProfile />,
       },
 
       {
-        path: 'detailed_job_info/:job_id',
-        element: <Detailed_jobInfo />
+        path: '/freelancers_profile/:freelancerid',
+        element: <View_freelancer_profile />
       },
-
-      // freelancer routes
+      // demo contract pages links
       {
-        path: "explore",
-        element: (<div>
-          <Search_filters />
-          <Job_section />
-        </div>)
-      },
-      {
-        path: 'freelancer/detailed-bid/:bid_id',
-        element: <Detailed_bid />
+        path: '/contracts/:contractId',
+        element: <ContractPage />
       }
-    ],
-  },
+    ]
 
-  /*  profile pages */
-  {
-    path: "/createAccount",
-    element: <ProfileForm />,
-  },
-  {
-    path: "/userProfile",
-    element: <UserProfile />,
-  },
-
-  {
-    path: '/freelancers_profile/:freelancerid',
-    element: <View_freelancer_profile />
-  },
-  // demo contract pages links
-  {
-    path: '/contracts/:contractId',
-    element: <ClientContractPage />
   }
-
 ]);
 
 
 function App() {
 
   const dispatch = useDispatch();
+  const { islogin, authChecked } = useSelector((state) => state.auth);
+  const user = useSelector((state) => state.auth?.user);
+
+  const userData = useSelector(
+    state => state.userSlice?.userData
+  );
 
   useEffect(() => {
     dispatch(checkLogin());   // checks token validity
-    dispatch(fetchUser());    // fetch user after login
-    dispatch(GetClientsJobs());      // all jobs of a client
-    dispatch(GetAllBids());   // only works if logged in
-    dispatch(fetchNotifications()); // fetch notifications for logged in user
   }, [dispatch]);
 
-  const user = useSelector((state) => state.auth?.user);
 
-  // GET LOGGED-IN USER
+  useEffect(() => {
+    if (!authChecked) return;
 
-  const hasRegistered = useRef(false);
+    if (!islogin) return;
 
-  console.log("user in app.jsx", user?._id, "user name", user?.firstName);
+    socket.connect();
+    dispatch(fetchUser());  // fetch user after login
+
+  }, [authChecked, islogin, dispatch]);
+
+//   console.log("🔥 APP RENDER", {
+//     userId: user?._id,
+//     userName: user?.firstName,
+//     socketConnected: socket.connected,
+//     socketId: socket.id,
+// });
+
+  // console.log("userData in app.jsx", userData);
+
+  useEffect(() => {
+
+    if (!userData?._id) return;
+
+    console.log(
+      "✅ User data ready in app.jsx:",
+      userData._id,
+      userData.firstName
+    );
+
+    dispatch(GetClientsJobs());
+
+    dispatch(GetAllBids());
+
+    dispatch(fetchNotifications());
+
+  }, [userData?._id, dispatch]);
+
+  // console.log("user in app.jsx", user?._id, "user name", user?.firstName);
 
   //* SOCKET CONNECTION
- useAppSocket(socket, user?._id);
+  useAppSocket(socket, userData?._id, userData?.firstName);
 
- return (
-  <>
-    <RouterProvider router={router} />
-    <ShowToast />
-  </>
-);
+  return (
+    <>
+      <RouterProvider router={router} />
+    </>
+  );
 }
 
 export default App;

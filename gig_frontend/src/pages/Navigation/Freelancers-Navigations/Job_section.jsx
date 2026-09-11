@@ -58,7 +58,7 @@ const Job_section = () => {
   // console.log("JobList in Job_section:", jobList);
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6  m-1 mb-20 ">
+    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 m-1 mb-20 ">
 
       {/* job card */}
       {

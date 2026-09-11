@@ -18,9 +18,9 @@ export const AddBid = async (BidData) => {
 // get the all bids of specific freelancer 
 export const GetSpecificFreelancerBids = async (freelancerId) => {
     try {
-        console.log("freelancerId", freelancerId)
+        // console.log("freelancerId", freelancerId)
         const res = await api.get(`/api/bids/freelancer/${freelancerId}`, { withCredentials: true });
-        console.log("GetBidsByFreelancer response:", res.data);
+        // console.log("GetBidsByFreelancer response:", res.data);
         return res.data; //backend response
     } catch (error) {
         console.log("from getting bids by freelancer", error);

@@ -40,7 +40,7 @@ async function authMiddleware(req, res, next) {
 
         req.user = user;
         req.userRole = decoded.role;
-        // console.log("Authenticated user:", user);
+        // console.log("Authenticated user:", req.user);
         next();
 
     } catch (error) {

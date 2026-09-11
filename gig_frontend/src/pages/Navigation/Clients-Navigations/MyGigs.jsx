@@ -65,7 +65,7 @@ const MyGigs = () => {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pb-24">
+    <div className=" max-w-320 mx-auto mb-20">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-semibold text-slate-800">My Gigs <span>({getFilteredJobs().length})</span></h1>
@@ -77,10 +77,10 @@ const MyGigs = () => {
             <button
               key={type}
               onClick={() => setFilter(type)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-300
                 ${filter === type
                   ? "bg-primary text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  : "bg-slate-200 text-slate-600 hover:bg-slate-100 border border-transparent hover:border-primary hover:text-primary"
                 }`}
             >
               {type.charAt(0).toUpperCase() + type.slice(1)}
@@ -88,6 +88,8 @@ const MyGigs = () => {
           ))}
         </div>
       </div>
+
+      <div className="w-full border mb-3"></div>
 
       {/* Gig Cards */}
       <div className="space-y-4">

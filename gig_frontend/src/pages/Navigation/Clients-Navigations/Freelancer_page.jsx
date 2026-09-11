@@ -55,7 +55,7 @@ const Freelancer_page = () => {
     }
 
     return (
-        <div className='main_freelancer_page flex'>
+        <div className='main_freelancer_page flex  max-w-340 mx-auto '>
             {/* filter section */}
             <div className="fillter_section bg-white">
                 <Filter />

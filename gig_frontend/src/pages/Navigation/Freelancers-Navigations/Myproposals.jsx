@@ -17,12 +17,11 @@ const Myproposals = () => {
         error,
     } = useGetSpecificFreelancerBids(user?._id);
 
-    // console.log("bids in freelancer ", bids?.bids_by_freelancer);
+    console.log("bids in freelancer ", bids?.bids_by_freelancer);
 
     const Allbids = bids?.bids_by_freelancer || [];
 
-    console.log("All bids", Allbids)
-
+    // console.log("All bids", Allbids)
 
     const getStatus = (status) => {
         // console.log("bid", bid._id);
@@ -36,7 +35,6 @@ const Myproposals = () => {
             return "Withdraw";
         }
     };
-
 
     const filterdBids = useMemo(() => {
         if (filter === "all") return Allbids;
@@ -52,7 +50,7 @@ const Myproposals = () => {
         );
     }, [filter, Allbids]);
 
-    console.log("filterd bids ", filterdBids);
+    // console.log("filterd bids ", filterdBids);
 
     if (isLoading) {
         return (
@@ -71,7 +69,7 @@ const Myproposals = () => {
     }
 
     return (
-        <div className="max-w-5xl mx-auto px-4 pb-24">
+        <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-20 ml-3 bg-gray-100">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl font-semibold text-slate-800">My Proposals <span>({Allbids.length})</span></h1>
@@ -83,10 +81,10 @@ const Myproposals = () => {
                         <button
                             key={type}
                             onClick={() => setFilter(type)}
-                            className={`px-4 py-1.5 rounded-full text-sm font-medium transition
+                            className={`px-4 py-1.5 rounded-full text-sm font-medium  transition-all duration-300
                                 ${filter === type
                                     ? "bg-primary text-white"
-                                    : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                    : "bg-slate-200 text-slate-600 border border-transparent hover:border-primary hover:bg-slate-100 hover:text-primary"
                                 }  
 
                                `}
@@ -95,7 +93,10 @@ const Myproposals = () => {
                         </button>
                     ))}
                 </div>
+
             </div>
+
+            <div className='w-full border mb-5'></div>
 
             {/* Gig Cards */}
 
@@ -117,17 +118,17 @@ const Myproposals = () => {
                             projectCategory,
                             timeline,
                             jobDescription,
-                            minBudget,
-                            maxBudget,
+                            Budget,
                             _id: gigIdValue,
                         } = gigId;
-
 
                         const updatedStatus = getStatus(status);
 
                         return (
-                            <div className="bg-surface-container-lowest p-6 rounded-xl hover:bg-surface-bright transition-all duration-300 group hover:shadow-[0_8px_24px_-4px_rgba(25,28,30,0.04)] shadow-sm"
-                                key={bid_id}>
+                            <div
+                                className="bg-surface-container-lowest p-6 rounded-xl border border-transparent hover:border-primary hover:bg-surface-bright transition-all duration-300 group hover:shadow-[0_8px_24px_-4px_rgba(25,28,30,0.04)] shadow-sm"
+                                key={bid_id}
+                            >
                                 <div className="flex flex-col md:flex-row justify-between gap-6">
                                     <div className="flex-1 space-y-4">
 
@@ -155,12 +156,11 @@ const Myproposals = () => {
                                             dangerouslySetInnerHTML={{ __html: jobDescription }}
                                         ></div>
 
-
                                         {/* budget */}
                                         <div className="flex flex-wrap gap-6 items-center">
                                             <div className="flex flex-col">
                                                 <span className="text-[10px] uppercase font-bold text-outline tracking-wider">Client Budget</span>
-                                                <span className="text-on-surface font-semibold">${`${minBudget}-${maxBudget}`}</span>
+                                                <span className="text-primary font-bold">${`${Budget}`}</span>
                                             </div>
 
                                             <div className="flex flex-col">

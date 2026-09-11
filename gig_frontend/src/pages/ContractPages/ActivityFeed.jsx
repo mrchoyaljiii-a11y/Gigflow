@@ -1,112 +1,143 @@
 import React from "react";
+
 import {
-  FiCheckCircle,
-  FiUploadCloud,
-  FiDollarSign,
-  FiEdit3,
-  FiMessageCircle,
-  FiClock,
-  FiFileText,
-  FiGitCommit,
-  FiAlertCircle,
-  FiArrowRight,
-} from "react-icons/fi";
+  FaFileContract, FaCheckCircle, FaTimesCircle,
+  FaPlusCircle, FaEdit, FaTrashAlt, FaClipboardList,
+  FaHandshake, FaClipboardCheck, FaPaperPlane,
+  FaRedoAlt, FaAward, FaUndoAlt, FaExchangeAlt,
+  FaFileUpload, FaMoneyBillWave, FaStar,
+} from "react-icons/fa";
+import TimeLine from "./ContractComponets/TimeLine";
 
-const activities = [
-  {
-    id: 1,
-    type: "payment",
-    title: "Payment Released",
-    description:
-      "Client released $1,200 for the completed UI Design milestone.",
-    user: "Arjun Sharma",
-    time: "10 mins ago",
+const ACTIVITY_CONFIG = {
+
+  CONTRACT_CREATED: {
+    title: "Contract Created",
+    icon: FaFileContract,
+    iconColor: "text-blue-600",
+    bgColor: "bg-blue-100",
   },
 
-  {
-    id: 2,
-    type: "upload",
-    title: "Files Uploaded",
-    description:
-      "Frontend source code and responsive assets were uploaded.",
-    user: "Sneha Rao",
-    time: "1 hour ago",
+  CONTRACT_COMPLETED: {
+    title: "Contract Completed",
+    icon: FaCheckCircle,
+    iconColor: "text-emerald-600",
+    bgColor: "bg-emerald-100",
   },
 
-  {
-    id: 3,
-    type: "message",
-    title: "New Message",
-    description:
-      "The freelancer sent an update regarding checkout integration.",
-    user: "Sneha Rao",
-    time: "3 hours ago",
+  CONTRACT_CANCELLED: {
+    title: "Contract Cancelled",
+    icon: FaTimesCircle,
+    iconColor: "text-red-600",
+    bgColor: "bg-red-100",
   },
 
-  {
-    id: 4,
-    type: "milestone",
+  MILESTONE_CREATED: {
+    title: "Milestone Created",
+    icon: FaPlusCircle,
+    iconColor: "text-indigo-600",
+    bgColor: "bg-indigo-100",
+  },
+
+  MILESTONE_UPDATED: {
     title: "Milestone Updated",
-    description:
-      "Frontend Development moved to 'Awaiting Review'.",
-    user: "System",
-    time: "Yesterday",
+    icon: FaEdit,
+    iconColor: "text-sky-600",
+    bgColor: "bg-sky-100",
   },
 
-  {
-    id: 5,
-    type: "document",
-    title: "Documentation Added",
-    description:
-      "API documentation PDF has been attached to the contract.",
-    user: "Sneha Rao",
-    time: "Yesterday",
+  MILESTONE_DELETED: {
+    title: "Milestone Deleted",
+    icon: FaTrashAlt,
+    iconColor: "text-red-600",
+    bgColor: "bg-red-100",
   },
 
-  {
-    id: 6,
-    type: "revision",
+  MILESTONE_ACCEPTED: {
+    title: "Milestone Accepted",
+    icon: FaHandshake,
+    iconColor: "text-green-600",
+    bgColor: "bg-green-100",
+  },
+
+  MILESTONE_APPROVED: {
+    title: "Milestone Approved",
+    icon: FaClipboardCheck,
+    iconColor: "text-emerald-600",
+    bgColor: "bg-emerald-100",
+  },
+
+  WORK_SUBMITTED: {
+    title: "Work Submitted",
+    icon: FaPaperPlane,
+    iconColor: "text-cyan-600",
+    bgColor: "bg-cyan-100",
+  },
+
+  WORK_RESUBMITTED: {
+    title: "Work Resubmitted",
+    icon: FaRedoAlt,
+    iconColor: "text-violet-600",
+    bgColor: "bg-violet-100",
+  },
+
+  WORK_APPROVED: {
+    title: "Work Approved",
+    icon: FaAward,
+    iconColor: "text-green-600",
+    bgColor: "bg-green-100",
+  },
+
+  REVISION_REQUESTED: {
     title: "Revision Requested",
-    description:
-      "Minor spacing fixes requested for mobile checkout.",
-    user: "Arjun Sharma",
-    time: "2 days ago",
-  },
-];
-
-const iconMap = {
-  payment: {
-    icon: <FiDollarSign size={18} />,
-    bg: "bg-green-500",
+    icon: FaUndoAlt,
+    iconColor: "text-orange-600",
+    bgColor: "bg-orange-100",
   },
 
-  upload: {
-    icon: <FiUploadCloud size={18} />,
-    bg: "bg-blue-500",
+  CHANGES_REQUESTED: {
+    title: "Changes Requested",
+    icon: FaExchangeAlt,
+    iconColor: "text-amber-600",
+    bgColor: "bg-amber-100",
   },
 
-  message: {
-    icon: <FiMessageCircle size={18} />,
-    bg: "bg-indigo-500",
+  FILES_UPLOADED: {
+    title: "Files Uploaded",
+    icon: FaFileUpload,
+    iconColor: "text-blue-600",
+    bgColor: "bg-blue-100",
   },
 
-  milestone: {
-    icon: <FiGitCommit size={18} />,
-    bg: "bg-amber-500",
+  PAYMENT_RELEASED: {
+    title: "Payment Released",
+    icon: FaMoneyBillWave,
+    iconColor: "text-lime-600",
+    bgColor: "bg-lime-100",
   },
 
-  document: {
-    icon: <FiFileText size={18} />,
-    bg: "bg-purple-500",
-  },
-
-  revision: {
-    icon: <FiAlertCircle size={18} />,
-    bg: "bg-red-500",
+  REVIEW_LEFT: {
+    title: "Review Submitted",
+    icon: FaStar,
+    iconColor: "text-yellow-500",
+    bgColor: "bg-yellow-100",
   },
 };
 
-const ActivityFeed = () => {
+const ActivityFeed = ({ UserRole, ActivityData = [] }) => {
+
+  // console.log("ActivityData in ActivityFeed", ActivityData);
+
+  const Activities = ActivityData.filter((activity) => {
+    if (UserRole === "client") {
+      return activity.actor === "CLIENT" || activity.actor === "SYSTEM";
+    } else if (UserRole === "freelancer") {
+      return activity.actor === "FREELANCER" || activity.actor === "SYSTEM";
+    }
+  });
+
+  // console.log("Activities in ActivityFeed", Activities);
+
   return (
     <div className="rounded-3xl border border-slate-200 bg-white shadow-lg transition-all duration-300 hover:shadow-xl min-h-200">
       {/* Header */}
@@ -123,189 +154,142 @@ const ActivityFeed = () => {
             </p>
           </div>
 
-          <button
-            className="
-              rounded-xl
-              bg-blue-50
-              px-4
-              py-2
-              text-sm
-              font-medium
-              text-blue-600
-              transition-all
-              hover:bg-blue-100
-            "
-          >
-            View All
-          </button>
         </div>
       </div>
+      {
+        Activities.length === 0 ? (
+          <div className="flex min-h-[420px] items-center justify-center">
+            <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-8 text-center shadow-sm">
 
-      {/* Timeline */}
+              {/* Icon */}
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-blue-100 ring-8 ring-blue-50">
+                <FaClipboardList className="text-3xl text-blue-600" />
+              </div>
 
-      <div className="relative p-7">
-        {/* Vertical Line */}
+              {/* Heading */}
+              <h3 className="mt-6 text-2xl font-bold text-slate-800">
+                No Activity Yet
+              </h3>
 
-        <div className="absolute left-[42px] top-0 bottom-0 w-[2px] bg-slate-200 " />
+              {/* Description */}
+              <p className="mt-3 leading-7 text-slate-500">
+                This timeline will automatically display important contract events such as
+                milestone updates, submissions, approvals, payments, and other actions
+                performed during this project.
+              </p>
 
-        <div className="space-y-7 max-h-200
+              {/* Decorative badges */}
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <span className="rounded-full bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700">
+                  Milestones
+                </span>
+
+                <span className="rounded-full bg-emerald-50 px-4 py-2 text-sm font-medium text-emerald-700">
+                  Submissions
+                </span>
+
+                <span className="rounded-full bg-amber-50 px-4 py-2 text-sm font-medium text-amber-700">
+                  Payments
+                </span>
+
+                <span className="rounded-full bg-violet-50 px-4 py-2 text-sm font-medium text-violet-700">
+                  Reviews
+                </span>
+              </div>
+
+              {/* Footer */}
+              <div className="mt-8 rounded-2xl border border-dashed border-slate-300 bg-white p-4">
+                <p className="text-sm text-slate-500">
+                  🚀 Once either you or the other party performs an action, it will appear
+                  here in chronological order.
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          // {/* Timeline and Cards */}
+          <div className="relative p-7">
+            {/* Vertical Line */}
+
+            <div className="max-h-200
         overflow-auto">
-          {activities.map((item) => {
-            const config = iconMap[item.type];
+              {Activities?.map((item, index) => {
 
-            return (
-              <div
-                key={item.id}
-                className="group relative flex gap-5 "
-              >
-                {/* Timeline Icon */}
+                const activity = ACTIVITY_CONFIG[item.action];
+                const Icon = activity.icon;
 
-                <div
-                  className={`
-                    relative
-                    z-10
+                return (
+                  <div
+                    key={item._id}
+                    className="flex gap-4 mt-2"
+                  >
+                    {/* Timeline Icon */}
 
-                    flex
-                    h-11
-                    w-11
+                    <TimeLine  isLast={index === Activities.length - 1} Icon={Icon} bgColor={activity.bgColor} iconColor={activity.iconColor}/>
 
-                    items-center
-                    justify-center
+                    {/* Card */}
 
-                    rounded-full
-
-                    text-white
-
-                    shadow-lg
-
-                    ${config.bg}
-
-                    transition-all
-                    duration-300
-
-                    group-hover:scale-110
-                  `}
-                >
-                  {config.icon}
-                </div>
-
-                {/* Card */}
-
-                <div
-                  className="
-                    flex-1
-
-                    rounded-2xl
-
-                    border
-
-                    border-slate-200
-
-                    bg-slate-50
-
-                    p-5
-
-                    transition-all
-
-                    duration-300
-
-                    hover:-translate-y-1
-                    hover:border-blue-200
-                    hover:bg-white
-                    hover:shadow-lg
-                  "
-                >
-                  {/* Top */}
-
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <h3 className="font-bold text-slate-800">
-                      {item.title}
-                    </h3>
-
-                    <span
-                      className="
-                        flex
-                        items-center
-                        gap-1
-
-                        rounded-full
-
-                        bg-slate-100
-
-                        px-3
-
-                        py-1
-
-                        text-xs
-
-                        text-slate-500
-                      "
+                    <div
+                      className={`flex-1 rounded-2xl border border-slate-200 bg-slate-50 p-5 transition-all duration-300 hover:-translate-y-1 hover:shadow-lg ${activity.bgColor} mb-4
+                    `}
                     >
-                      <FiClock size={12} />
+                      {/* Top */}
 
-                      {item.time}
-                    </span>
-                  </div>
+                      <div className="flex flex-wrap items-center justify-between">
+                        <h3 className="font-bold text-slate-800">
+                          {activity.title}
+                        </h3>
 
-                  {/* Description */}
+                        <span
+                          className="
+                        flex items-center gap-1 rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500
+                      "
+                        >
+                          {item.createdAt.split("T")[0]} {item.createdAt.split("T")[1].split(".")[0]}
+                        </span>
+                      </div>
 
-                  <p className="mt-3 leading-7 text-slate-600">
-                    {item.description}
-                  </p>
+                      {/* Description */}
 
-                  {/* Footer */}
+                      <p className="mt-3 leading-7 text-slate-600">
+                        {item.message}
+                      </p>
 
-                  <div className="mt-5 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
-                          item.user
-                        )}&background=random`}
-                        alt={item.user}
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
+                      {/* Footer */}
 
-                      <div>
-                        <p className="text-sm font-semibold text-slate-700">
-                          {item.user}
-                        </p>
+                      <div className="mt-5 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={`https://ui-avatars.com/api/?name=${encodeURIComponent(
+                              item.actor
+                            )}&background=random`}
+                            alt={item.actor}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
 
-                        <p className="text-xs text-slate-500">
-                          Activity Record
-                        </p>
+                          <div>
+                            <p className="text-sm font-semibold text-slate-700">
+                              {item.actor === "SYSTEM" ? "System" : item.actor === "CLIENT" ? "Client" : "Freelancer"}
+                            </p>
+
+                            <p className="text-xs text-slate-500">
+                              Activity Record
+                            </p>
+                          </div>
+                        </div>
+
+
                       </div>
                     </div>
 
-                    <button
-                      className="
-                        flex
-                        items-center
-                        gap-2
-
-                        text-sm
-
-                        font-medium
-
-                        text-blue-600
-
-                        transition-all
-
-                        hover:gap-3
-                      "
-                    >
-                      Details
-
-                      <FiArrowRight />
-                    </button>
                   </div>
-                </div>
-
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>
+                );
+              })}
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 };
 

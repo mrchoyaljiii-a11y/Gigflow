@@ -1,22 +1,30 @@
-// these hooks is used to get the contract detailed 
+// hooks/contract/useContract.js
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getContract } from "../../api/contractAPI";
 
+
+
 export const useContract = (contractId) => {
 
-    return useQuery({
+    const query = useQuery({
         queryKey: ["contract", contractId],
-        
-        queryFn: () => {
-            console.log("Fetching contract...");
-            console.log("contractId in useContract",contractId);
-            return getContract(contractId);
+
+        queryFn: async () => {
+            // console.log("🚀 Fetching contract...");
+            // console.log("📌 Contract ID:", contractId);
+
+            const data = await getContract(contractId);
+
+            // console.log("✅ API Response:", data);
+
+            return data;
         },
 
-        enabled: !!contractId, // only run the query if contractId is truthy or available
+        enabled: Boolean(contractId),
 
-        staleTime: 5 * 60 * 1000 // 5 minutes
-
+        staleTime: 5 * 60 * 1000, // 5 minutes
     });
 
+    return query;
 };

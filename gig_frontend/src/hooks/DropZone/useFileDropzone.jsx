@@ -1,18 +1,6 @@
 import { useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 
-/**
- * Reusable file dropzone hook
- *
- * @param {Object} options
- * @param {File[]} options.files
- * @param {Function} options.setFiles
- * @param {Function} [options.setFileErrors]
- * @param {number} [options.maxFiles=5]
- * @param {boolean} [options.multiple=true]
- * @param {number} options.maxSize
- * @param {Object} options.accept
- */
 
 export const useFileDropzone = ({
     files = [],
@@ -24,7 +12,7 @@ export const useFileDropzone = ({
     accept,
 }) => {
 
-    // console.log("files received ", files);
+    // console.log("files received in useFileDropzone hook ", files);
 
     const onDrop = useCallback((acceptedFiles, rejectedFiles) => {
 

@@ -254,7 +254,7 @@ export default function Dashboard_section() {
     `${firstName?.[0] || ""}${lastName?.[0] || ""}`;
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className=" min-h-screen bg-gray-50 font-sans">
       <div className="sm:px-6 py-4 space-y-6">
 
         {/*  Welcome bar / hero */}
@@ -468,7 +468,7 @@ export default function Dashboard_section() {
                       {/* info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">{bid.gigId?.jobtitle}</p>
-                        <p className="text-xs text-gray-400 mt-0.5"> {bid.gigId?.clientId?.company} · Sent {formattedDate}</p>
+                        <p className="text-xs text-gray-400 mt-0.5"> {bid.gigId?.clientId?.company?.name} · Sent {formattedDate}</p>
                       </div>
                       {/* status */}
                       <span

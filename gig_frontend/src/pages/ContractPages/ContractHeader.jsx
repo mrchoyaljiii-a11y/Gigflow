@@ -8,15 +8,33 @@ import {
   HiOutlineCurrencyDollar,
 } from "react-icons/hi";
 
+import { HiBellAlert } from "react-icons/hi2";
+
 import {
   FiPlus,
   FiCheckCircle,
   FiClock,
 } from "react-icons/fi";
 
-import { CiCircleRemove } from "react-icons/ci";
+import { IoMdNotifications } from "react-icons/io";
+import { IoChatbox } from "react-icons/io5";
 
-const ContractHeader = ({contracrtData}) => {
+import { CiCircleRemove } from "react-icons/ci";
+import { useSelector, useDispatch } from "react-redux";
+import { fetchNotifications, Show_notification_component } from "../../redux/Notification_actions/Notifications_actions";
+
+const ContractHeader = ({ contracrtData, setShowChat }) => {
+
+  const dispatch = useDispatch();
+  const { user: loginUser } = useSelector((state) => state.auth);
+ 
+  const { notifications, unreadCount } = useSelector((state) => state.Notification_actions_slice);
+  // console.log("user in contract page loginUser", loginUser);
+
+  let UserRole = null;
+
+  const IsClient = loginUser?.role === "client";
+  const IsFreelancer = loginUser?.role === "freelancer";
 
   const navigate = useNavigate();
 
@@ -26,7 +44,7 @@ const ContractHeader = ({contracrtData}) => {
       <div className="relative mx-auto max-w-[1800px] px-5 py-3.5 lg:px-8">
 
         {/* Top Row */}
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+        <div className={`flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between ${IsFreelancer ? "flex flex-row justify-between items-center" : ""}`}>
 
           {/* Left */}
           <div className="flex items-start gap-4">
@@ -45,7 +63,7 @@ const ContractHeader = ({contracrtData}) => {
                 hover:bg-white/20
                 hover:shadow-lg
               "
-           onClick={() => navigate(-1)}
+              onClick={() => navigate(-1)}
             >
               <HiArrowLeft size={22} />
             </button>
@@ -73,7 +91,7 @@ const ContractHeader = ({contracrtData}) => {
                   "
                 >
                   <HiOutlineStatusOnline size={14} />
-                 {contracrtData.contractStatus}
+                  {contracrtData.contractStatus}
                 </div>
               </div>
 
@@ -99,11 +117,17 @@ const ContractHeader = ({contracrtData}) => {
             </div>
           </div>
 
-          {/* Right Buttons */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Add Milestone */}
-            <button
-              className="
+          {/* show Right side wwhen role === client */}
+
+          {!IsFreelancer && (
+
+            <div className=" flex flex-row items-center justify-between gap-3">
+
+
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Add Milestone */}
+                {/* <button
+                  className="
                 group
                 flex items-center gap-2
                 rounded-xl
@@ -121,17 +145,18 @@ const ContractHeader = ({contracrtData}) => {
                 hover:bg-white/20
                 hover:shadow-xl
               "
-            >
-              <FiPlus
-                size={18}
-                className="transition-transform duration-300 group-hover:rotate-90"
-              />
-              Add Milestone
-            </button>
+                >
+                  <FiPlus
+                    size={18}
+                    className="transition-transform duration-300 group-hover:rotate-90"
+                  />
+                  Add Milestone
+                </button> */}
 
-            {/* Release Payment */}
-            <button
-              className="
+                {/* Release Payment */}
+
+                {/* <button
+                  className="
                 group
                 flex items-center gap-2
                 rounded-xl
@@ -152,17 +177,17 @@ const ContractHeader = ({contracrtData}) => {
                 hover:bg-emerald-600
                 hover:shadow-2xl
               "
-            >
-              <HiOutlineCurrencyDollar
-                className="transition-transform duration-300 group-hover:scale-110"
-                size={20}
-              />
-              Release Payment
-            </button>
+                >
+                  <HiOutlineCurrencyDollar
+                    className="transition-transform duration-300 group-hover:scale-110"
+                    size={20}
+                  />
+                  Release Payment
+                </button> */}
 
-            {/* Video Call */}
-            <button
-              className="
+                {/* Video Call */}
+                <button
+                  className="
                 group
                 flex items-center gap-2
 
@@ -185,19 +210,174 @@ const ContractHeader = ({contracrtData}) => {
                 hover:bg-white/20
                 
               "
-            >
-              <CiCircleRemove
-                className="transition-transform group-hover:scale-110 font-semibold"
-                size={22}
-              />
+                >
+                  <CiCircleRemove
+                    className="transition-transform group-hover:scale-110 font-semibold"
+                    size={22}
+                  />
 
-              Cancle Contract
-            </button>
+                  Cancle Contract
+                </button>
+              </div>
+
+              {/* Notification bell  and chat (//?chat for small screen only) */}
 
 
-          </div>
+              <div className=" flex flex-row items-center justify-between gap-3">
+
+                {/* notification bell */}
+                <button
+                  className="group relative flex h-11 w-11 items-center justify-center
+                        rounded-full bg-blue-50 border border-blue-100
+                        shadow-sm transition-all duration-200
+                        hover:bg-blue-100 hover:border-blue-300
+                        hover:shadow-md cursor-pointer"
+
+                  onClick={() => {
+                    dispatch(Show_notification_component(true));
+                    dispatch(fetchNotifications());
+                  }}
+                >
+                  {/* Bell */}
+                  <HiBellAlert
+                    size={22}
+                    className="text-blue-600 transition-all duration-200 group-hover:text-blue-700 hover:scale-110 "
+                  />
+
+                  {/* Animated Notification Dot */}
+                  {unreadCount > 0 && (
+                    <>
+                      {/* Notification Count */}
+                      <span
+                        className="absolute -top-1.5 -right-1.5
+                              min-w-[20px] h-5 px-1
+                              flex items-center justify-center
+                              rounded-full bg-gradient-to-r from-blue-600 to-blue-500
+                              text-[10px] font-bold text-white
+                              border-2 border-white shadow-lg"
+                      >
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-60 animate-ping"></span>
+                        {unreadCount > 99 ? "99+" : unreadCount}
+                      </span>
+                    </>
+                  )}
+                </button>
+
+                {/* chat */}
+                <button
+                  className="group relative flex h-11 w-11 items-center justify-center
+                        rounded-full bg-blue-50 border border-blue-100
+                        shadow-sm transition-all duration-200
+                        hover:bg-blue-100 hover:border-blue-300
+                        hover:shadow-md lg:hidden cursor-pointer"
+
+                  onClick={() => {
+                    setShowChat((prev) => !prev);
+                  }}
+                >
+
+                  <IoChatbox
+                    size={22}
+                    className="text-blue-600 transition-all duration-200 group-hover:text-blue-700 hover:scale-110 "
+                  />
+
+                  <span
+                    className="absolute -top-1.5 -right-1.5
+                              min-w-[20px] h-5 px-1
+                              flex items-center justify-center
+                              rounded-full bg-gradient-to-r from-blue-600 to-blue-500
+                              text-[10px] font-bold text-white
+                              border-2 border-white shadow-lg"
+                  >
+                    <span className="absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-60 animate-ping"></span>
+                    {unreadCount > 99 ? "99+" : unreadCount}
+
+                  </span>
+                </button>
+
+              </div>
+
+            </div>
+          )}
+
+
+          {!IsClient && (
+            <div className=" flex flex-row items-center justify-between gap-3">
+
+              {/* notification bell */}
+              <button
+                className="group relative flex h-11 w-11 items-center justify-center
+                        rounded-full bg-blue-50 border border-blue-100
+                        shadow-sm transition-all duration-200
+                        hover:bg-blue-100 hover:border-blue-300
+                        hover:shadow-md cursor-pointer"
+
+                onClick={() => {
+                  dispatch(Show_notification_component(true));
+                  dispatch(fetchNotifications());
+                }}
+              >
+                {/* Bell */}
+                <HiBellAlert
+                  size={22}
+                  className="text-blue-600 transition-all duration-200 group-hover:text-blue-700 hover:scale-110 "
+                />
+
+                {/* Animated Notification Dot */}
+                {unreadCount > 0 && (
+                  <>
+                    {/* Notification Count */}
+                    <span
+                      className="absolute -top-1.5 -right-1.5
+                              min-w-[20px] h-5 px-1
+                              flex items-center justify-center
+                              rounded-full bg-gradient-to-r from-blue-600 to-blue-500
+                              text-[10px] font-bold text-white
+                              border-2 border-white shadow-lg"
+                    >
+                      <span className="absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-60 animate-ping"></span>
+                      {unreadCount > 99 ? "99+" : unreadCount}
+                    </span>
+                  </>
+                )}
+              </button>
+
+              {/* chat */}
+              <button
+                className="group relative flex h-11 w-11 items-center justify-center
+                        rounded-full bg-blue-50 border border-blue-100
+                        shadow-sm transition-all duration-200
+                        hover:bg-blue-100 hover:border-blue-300
+                        hover:shadow-md lg:hidden cursor-pointer"
+
+                onClick={() => {
+                  setShowChat((prev) => !prev);
+                }}
+              >
+
+                <IoChatbox
+                  size={22}
+                  className="text-blue-600 transition-all duration-200 group-hover:text-blue-700 hover:scale-110 "
+                />
+
+                <span
+                  className="absolute -top-1.5 -right-1.5
+                              min-w-[20px] h-5 px-1
+                              flex items-center justify-center
+                              rounded-full bg-gradient-to-r from-blue-600 to-blue-500
+                              text-[10px] font-bold text-white
+                              border-2 border-white shadow-lg"
+                >
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-blue-500 opacity-60 animate-ping"></span>
+                  {unreadCount > 99 ? "99+" : unreadCount}
+
+                </span>
+              </button>
+
+            </div>
+          )}
+
         </div>
-
 
       </div>
     </header>

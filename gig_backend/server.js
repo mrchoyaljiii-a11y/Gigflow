@@ -19,6 +19,7 @@ const notification_router = require('./routers/Notification/notification_roter')
 const Extra_info_router = require('./routers/Extra_user_info/Extra_info');
 const contract_router = require('./routers/contract_router/contract_router');
 const client_router = require('./routers/client_releted_router/client_releted_router');
+const chat_router = require('./routers/Chat_router/Chat_router');
 //  DB
 const ConnectDB = require('./connections/DB');
 
@@ -54,7 +55,7 @@ app.use(notification_router);
 app.use(Extra_info_router);
 app.use(contract_router); 
 app.use(client_router);
-
+app.use(chat_router);
 //  TEST ROUTE
 app.get("/", (req, res) => {
     res.send("Backend running successfully 🚀");
