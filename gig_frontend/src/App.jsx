@@ -61,7 +61,7 @@ import Dashboard_section from "./pages/Navigation/Freelancers-Navigations/Freela
 import ContractPage from './pages/ContractPages/ContractPage.jsx'
 
 //apis
-import { useGetClientInfo } from './hooks/Client_releted/useGetClientInfo.js'
+import { useGetUserInfo } from './hooks/Client_releted/useGetUserInfo.js'
 import Client_Dashboard_layout from "./pages/Navigation/Clients-Navigations/client-profile/Client_Dashboard_layout.jsx";
 import Client_Dashboard from "./pages/Navigation/Clients-Navigations/client-profile/Client_Dashboard.jsx";
 import Client_contracts from "./pages/Navigation/Clients-Navigations/client-profile/Client_contracts.jsx";

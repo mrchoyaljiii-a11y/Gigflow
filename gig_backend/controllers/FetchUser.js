@@ -4,7 +4,7 @@ const ClientModel = require('../model/UserModel/User_model');
 const FreelancerModel = require("../model/UserModel/Freelancer_Model");
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// fetch login user details 
+// fetch login user details client / freeqlancer both
 async function Fetch_UserDetails(req, res) {
     try {
         const userToken = req.cookies.user_token;

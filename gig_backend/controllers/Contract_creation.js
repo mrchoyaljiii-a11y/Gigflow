@@ -376,7 +376,7 @@ async function Handle_create_milestone(req, res) {
 
     try {
         console.log(req.body)
-        console.log(req.files)   
+        console.log(req.files)
         const { title, description, amount, dueDate, contractId } = req.body;
 
         const files = req.files || [];
@@ -409,7 +409,12 @@ async function Handle_create_milestone(req, res) {
         if (files.length > 0) {
             try {
                 const uploadPromises = files.map((file) =>
-                    uploadToCloudinary(file.buffer, file.originalname)
+                    uploadToCloudinary(
+                        file.buffer,
+                        file.originalname,
+                        file.mimetype,
+                        "milestones_attachments"
+                    )
                 );
 
                 const cloudinaryResults = await Promise.all(uploadPromises);
@@ -995,7 +1000,11 @@ async function Handle_UploadWork(req, res) {
         if (files.length > 0) {
             try {
                 const uploadPromises = files.map((file) =>
-                    uploadToCloudinary(file.buffer, file.originalname)
+                    uploadToCloudinary(
+                        file.buffer,
+                        file.originalname,
+                        file.mimetype,
+                        "milestones_attachments")
                 );
 
                 const cloudinaryResults = await Promise.all(uploadPromises);
@@ -1133,7 +1142,11 @@ async function Handle_update_milestone(req, res) {
         if (files.length > 0) {
             try {
                 const uploadPromises = files.map((file) =>
-                    uploadToCloudinary(file.buffer, file.originalname)
+                    uploadToCloudinary(
+                        file.buffer,
+                        file.originalname,
+                        file.mimetype,
+                        "milestones_attachments")
                 );
 
                 const cloudinaryResults = await Promise.all(uploadPromises);

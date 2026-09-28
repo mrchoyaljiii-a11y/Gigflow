@@ -45,7 +45,7 @@ const MessageSchema = new Schema(
 
         status: {
             type: String,
-            enum: ["sent", "delivered", "seen"],
+            enum: ["sent", "delivered", "seen", "failed"],
             default: "sent",
         },
 

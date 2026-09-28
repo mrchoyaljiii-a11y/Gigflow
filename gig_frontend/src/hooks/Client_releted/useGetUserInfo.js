@@ -2,7 +2,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { getClient } from "../../api/Client_releted_API";
 
-export const useGetClientInfo = () => {
+
+// through these we fetch both client and freelancer data ! you can rename these hooks as per your need
+export const useGetUserInfo = () => {
 
     return useQuery({
 
@@ -19,3 +21,6 @@ export const useGetClientInfo = () => {
 
 
 };
+
+
+// useGetClientInfo

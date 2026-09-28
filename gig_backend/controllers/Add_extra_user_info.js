@@ -6,7 +6,9 @@ const fs = require("fs");
 // this function is used to add the freelancer profolio info
 async function Handle_Add_portfolio(req, res) {
     try {
+
         const userId = req.user.id;
+
         const {
             project_title,
 
@@ -19,6 +21,8 @@ async function Handle_Add_portfolio(req, res) {
             portfolio_created_at,
 
         } = req.body;
+
+        // console.log("Received portfolio data:", req.body);
 
         if (
             !project_title ||

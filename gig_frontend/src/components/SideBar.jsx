@@ -98,14 +98,15 @@ const SideBar = () => {
             <NavLink
               key={path}
               to={path}
+              end={path === "/home"}
               title={!expand ? label : undefined}
-              className={ ({ isActive }) => `flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors ${expand ? "justify-start" : "justify-center"
+              className={({ isActive }) => `flex items-center gap-3 rounded-md px-2.5 py-2 text-sm transition-colors ${expand ? "justify-start" : "justify-center"
                 } 
                ${isActive
                   ? "bg-primary/15 text-primary font-medium"
                   : "text-gray-600 hover:bg-black/5"
                 }
-                hover:text-primary font-medium hover:border`}
+                hover:text-priamary font-medium hover:border`}
             >
               <Icon size={22} className="shrink-0" />
               {expand && <span className="truncate">{label}</span>}

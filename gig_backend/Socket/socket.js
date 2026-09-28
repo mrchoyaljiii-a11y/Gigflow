@@ -63,7 +63,7 @@ const initSocket = (server) => {
                 contract.clientId.toString() === socket.userId ||
                 contract.freelancerId.toString() === socket.userId
             );
-            
+
             if (!isParticipant) return;
             const roomId = `contract:${contractId}`;
             socket.join(roomId);
@@ -80,7 +80,7 @@ const initSocket = (server) => {
             if (!socket.userId) return;
 
             const userId = socket.userId;
-            const userName = socket.userName;
+            const userName = socket.userName; ``
             const sockets = onlineUsers.get(userId); // here its a size of a set ->  onlineUsers.get(userId).add(socket.id);
 
             if (sockets) {

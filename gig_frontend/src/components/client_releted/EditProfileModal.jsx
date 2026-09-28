@@ -65,9 +65,15 @@ const EditProfileModal = ({
     isOpen,
     section,
     clientData,
+    freelancerData,
+    role,
     onClose,
     refetch,
 }) => {
+
+    const [loading, setLoading] = useState(false);
+    const [profileImg, setprofileImg] = useState([]);
+    const [imgLoading, setImgLoading] = useState(false);
 
     const {
         mutateAsync,
@@ -76,9 +82,39 @@ const EditProfileModal = ({
         data: responseData,
     } = useUpdateClientProfil_Info();
 
-    const [loading, setLoading] = useState(false);
-    const [profileImg, setprofileImg] = useState([]);
-    const [imgLoading, setImgLoading] = useState(false);
+    // *only for freelancer data, if role is freelancer then use freelancerData else use clientData
+    const UpdatedfreelancerData = {
+        freelancerSummary: freelancerData?.freelancerSummary || "",
+        freelanerSkills: freelancerData?.freelanerSkills.join(",") || [],
+         websiteLink: freelancerData?.Links?.websiteLink || "",
+        linkedInLink: freelancerData?.Links?.linkedInLink || "",
+    }
+
+    const UpdatedClientData = {
+        clientSummary: clientData?.clientSummary || "",
+        firstName: clientData?.firstName || "",
+        lastName: clientData?.lastName || "",
+        country: clientData?.country || "",
+        state: clientData?.state || "",
+        email: clientData?.email || "",
+        name: clientData?.company?.name || "", // company name
+        industryType: clientData?.company?.industryType || "",
+        companySize: clientData?.company?.companySize || "",
+        clientRole: clientData?.clientRole || "",
+        companySummary: clientData?.company?.companySummary || "",
+        // links
+        websiteLink: clientData?.Links?.websiteLink || "",
+        linkedInLink: clientData?.Links?.linkedInLink || "",
+        // skills
+        hiringCategories: clientData?.hiringCategories.join(",") || "",
+        // phone number
+        PhoneNo: {
+            countryCode: clientData?.phoneNo?.countryCode || "+91",
+            number: clientData?.phoneNo?.number || "",
+        },
+    }
+
+    let UserData = role === "client" ? UpdatedClientData : UpdatedfreelancerData;
 
     // console.log("profileImg", profileImg);
 
@@ -126,29 +162,7 @@ const EditProfileModal = ({
         formState: { errors }
     } = useForm(
         {
-            defaultValues: {
-                clientSummary: clientData?.clientSummary || "",
-                firstName: clientData?.firstName || "",
-                lastName: clientData?.lastName || "",
-                country: clientData?.country || "",
-                state: clientData?.state || "",
-                email: clientData?.email || "",
-                name: clientData?.company?.name || "", // company name
-                industryType: clientData?.company?.industryType || "",
-                companySize: clientData?.company?.companySize || "",
-                clientRole: clientData?.clientRole || "",
-                companySummary: clientData?.company?.companySummary || "",
-                // links
-                websiteLink: clientData?.Links?.websiteLink || "",
-                linkedInLink: clientData?.Links?.linkedInLink || "",
-                // skills
-                hiringCategories: clientData?.hiringCategories.join(",") || "",
-                // phone number
-                PhoneNo: {
-                    countryCode: clientData?.phoneNo?.countryCode || "+91",
-                    number: clientData?.phoneNo?.number || "",
-                },
-            }
+            defaultValues: UserData
         }
     )
 
@@ -189,12 +203,12 @@ const EditProfileModal = ({
         setLanguages(updatedLanguages)
     }
 
-
     if (!isOpen) return null;
 
 
     const titles = {
         about: "Edit About Me",
+        ProfessionalSummary: " Edit Professional Summary",
         personal: "Edit Personal Information",
         company: "Edit Company Information",
         links: "Manage Links",
@@ -232,7 +246,7 @@ const EditProfileModal = ({
 
     async function HandleProfileImg() {
         try {
-            
+
             setImgLoading(true);
             console.log("loading 1", loading)
 
@@ -266,7 +280,7 @@ const EditProfileModal = ({
         } catch (error) {
             console.log(error);
         } finally {
-             console.log("loading 2", loading)
+            console.log("loading 2", loading)
             setImgLoading(false);
         }
 
@@ -283,6 +297,24 @@ const EditProfileModal = ({
                 case "about":
                     payload = {
                         clientSummary: data.clientSummary,
+                    };
+                    break;
+
+                case "ProfessionalSummary":
+                    payload = {
+                        freelancerSummary: data.freelancerSummary,
+                    };
+                    break;
+
+                case "freelancerLanguages":
+                    payload = {
+                        languages: languages,
+                    };
+                    break;
+
+                case "freelanerSkills":
+                    payload = {
+                        freelanerSkills: data.freelanerSkills ? data.freelanerSkills.split(",") : [],
                     };
                     break;
 
@@ -329,8 +361,8 @@ const EditProfileModal = ({
                     return;
             }
 
-            console.log("Payload:", payload);
-
+            payload.role = role; // Add role to the payload
+            // console.log("Payload:", payload);
             const response = await mutateAsync(payload);
             console.log("Response:", response.success);
 
@@ -369,7 +401,6 @@ const EditProfileModal = ({
 
                     <div className="p-6 space-y-5">
 
-
                         {/* About */}
                         {section === "about" && (
                             <div className="mt-6 text-left">
@@ -401,6 +432,105 @@ const EditProfileModal = ({
                                 )}
                             </div>
                         )}
+
+                        {/* // for freelnacer professional summary */}
+                        {section === "ProfessionalSummary" && (
+                            <div className="mt-6 text-left">
+                                <label className="block mb-2">
+                                    About You <span className="text-red-500">*</span>
+                                </label>
+
+                                <textarea
+                                    placeholder="Tell clients about yourself, your role, and how you like to work..."
+                                    {...register("freelancerSummary", {
+                                        required: "Please tell clients about yourself",
+                                        minLength: {
+                                            value: 50,
+                                            message: "At least 50 characters required",
+                                        },
+                                        maxLength: {
+                                            value: 500,
+                                            message: "Maximum 500 characters",
+                                        },
+                                    })}
+                                    className="w-full border rounded-lg p-2"
+                                    rows={8}
+                                />
+
+                                {errors.ProfessionalSummary && (
+                                    <p className="text-red-500 text-sm">
+                                        {errors.ProfessionalSummary.message}
+                                    </p>
+                                )}
+
+                            </div>
+                        )}
+
+
+                        {/* freelancer skills */}
+
+                        {section === "freelanerSkills" && (
+                            <div>
+                                <label className="block text-sm font-medium mb-2">
+                                    {role === "client" ? "Hiring Categories" : "Skills"}
+                                </label>
+
+                                <textarea
+                                    rows={4}
+                                    placeholder="React, Node.js, UI Design"
+                                    {...register("freelanerSkills")}
+                                    className="w-full border rounded-xl p-4"
+                                />
+
+                                <p className="text-xs text-gray-500 mt-2">
+                                    Separate skills with colas. For example: React, Node.js, UI Design
+                                </p>
+                            </div>
+                        )}
+
+                        {/*freelancer languages */}
+
+                        {
+                            section === "freelancerLanguages" && (
+                                <div className="mt-6 border w-full p-6 rounded-lg">
+
+                                    {/* render all language models */}
+                                    {
+                                        languages.map((language, index) => (
+                                            <LanguageModel
+                                                key={index}
+                                                language={language}
+                                                index={index}
+                                                handleChange={handleLanguageChange}
+                                                handleRemove={handleRemoveLanguage}
+                                            />
+                                        ))
+                                    }
+
+                                    {/* add language button */}
+                                    <button
+                                        type="button"
+                                        onClick={handleAddLanguage}
+                                        className="mt-5 border border-primary text-primary px-4 py-2 rounded-lg text-sm hover:bg-blue-50"
+                                    >
+                                        + Add Language
+                                    </button>
+
+                                    {/* preview */}
+                                    <div className="mt-6">
+                                        <p className="font-semibold mb-2">Saved Languages:</p>
+
+                                        {
+                                            languages.map((lang, index) => (
+                                                <div key={index} className="text-sm text-gray-700">
+                                                    {lang.languageName} - {lang.proficiency}
+                                                </div>
+                                            ))
+                                        }
+                                    </div>
+                                </div>
+                            )
+                        }
 
                         {/* Personal */}
                         {section === "personal" && (
@@ -768,7 +898,7 @@ const EditProfileModal = ({
                         {section === "skills" && (
                             <div>
                                 <label className="block text-sm font-medium mb-2">
-                                    Hiring Categories
+                                    {role === "client" ? "Hiring Categories" : "Skills"}
                                 </label>
 
                                 <textarea
@@ -783,6 +913,7 @@ const EditProfileModal = ({
                                 </p>
                             </div>
                         )}
+
 
                         {/* profile image */}
                         {
@@ -917,7 +1048,7 @@ const EditProfileModal = ({
                                     disabled={profileImg.length === 0}
                                     onClick={() => HandleProfileImg()}
                                 >
-                                     {imgLoading ? "Saving..." : "Save Image"}
+                                    {imgLoading ? "Saving..." : "Save Image"}
                                 </button>
                             ) : (
                                 <button

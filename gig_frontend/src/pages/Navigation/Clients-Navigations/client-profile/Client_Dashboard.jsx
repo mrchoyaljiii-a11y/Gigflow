@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useGetClientInfo } from '../../../../hooks/Client_releted/useGetClientInfo';
+import { useGetUserInfo } from '../../../../hooks/Client_releted/useGetUserInfo';
 import { useGetJobs } from '../../../../hooks/job_releted/useGetJobs';
 import { useGetHired } from '../../../../hooks/Hired_records_releted/useGetHired';
 import { useGetAllContracts } from "../../../../hooks/contract_releted/useGetAllContracts";
@@ -122,7 +122,7 @@ const Client_Dashboard = () => {
         isError,
         refetch,
 
-    } = useGetClientInfo();
+    } = useGetUserInfo();
 
     if (isLoading) {
         return <div>Loading...</div>;

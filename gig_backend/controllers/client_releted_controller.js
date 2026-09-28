@@ -1,14 +1,38 @@
 const ClientModel = require('../model/UserModel/User_model');
+const FreelancerModel = require('../model/UserModel/Freelancer_Model');
 const cloudinary = require('../connections/cloudinary');
-const fs = require("fs");
 
-async function updateClientProfile(req, res) {
+
+// these is used for both freeelancer and client to update their profile info
+async function updateUserProfile(req, res) {
     try {
-        const clientId = req.user.id;
         const playload = req.body;
 
-        console.log("Payload:", playload);
-        console.log("profile image:", req.file);
+        const userId = req.user.id;
+        const userRole = playload?.role;
+
+        const UserModel =
+            userRole === "client"
+                ? ClientModel
+                : userRole === "freelancer"
+                    ? FreelancerModel
+                    : null;
+
+        if (!UserModel) {
+            return res.status(403).json({
+                success: false,
+                message: "Invalid user role",
+            });
+        }
+
+        const existingUser = await UserModel.findById(userId);
+
+        if (!existingUser) {
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+        }
 
         if (req.file) {
             const result = await cloudinary.uploader.upload(
@@ -19,18 +43,23 @@ async function updateClientProfile(req, res) {
                 }
             );
 
-            const existingUser = await ClientModel.findById(clientId);
-
-            if (existingUser?.profileImage?.public_id) {
-
-                await cloudinary.uploader.destroy(
-                    existingUser.profileImage.public_id
-                );
+            // Delete old image from Cloudinary
+            if (existingUser.profileImage?.public_id) {
+                try {
+                    await cloudinary.uploader.destroy(
+                        existingUser.profileImage.public_id
+                    );
+                } catch (cloudinaryError) {
+                    console.error(
+                        "Failed to delete old profile image:",
+                        cloudinaryError
+                    );
+                }
             }
 
-            const updatedUser = await ClientModel.findByIdAndUpdate(
+            const updatedUser = await UserModel.findByIdAndUpdate(
 
-                clientId,
+                userId,
 
                 {
                     $set: {
@@ -62,21 +91,20 @@ async function updateClientProfile(req, res) {
             });
         }
 
+        const updatedClient = await UserModel.findByIdAndUpdate(userId, playload, { new: true });
 
-        const client = await ClientModel.findById(clientId);
-        if (!client) {
-            return res.status(404).json({ success: false, message: 'Client not found' });
-        }
+        res.status(200).json({ success: true, message: `${userRole} info updated successfully`, client: updatedClient });
 
-        const updatedClient = await ClientModel.findByIdAndUpdate(clientId, playload, { new: true });
 
-        res.status(200).json({ success: true, message: 'Client updated successfully', client: updatedClient });
+    } catch (error) {
+        console.error("Error updating user profile:", error);
 
-    }
-    catch (error) {
-        console.error('Error updating client profile:', error);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        });
     }
 }
 
-module.exports = { updateClientProfile };
+
+module.exports = { updateUserProfile };

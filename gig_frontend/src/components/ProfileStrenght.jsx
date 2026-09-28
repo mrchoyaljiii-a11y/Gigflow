@@ -3,18 +3,17 @@ import {
     FiCheckCircle, FiCircle, FiArrowRight, FiUser
 } from "react-icons/fi"
 import { NavLink } from 'react-router-dom';
-import { useGetClientInfo } from '../hooks/Client_releted/useGetClientInfo';
+import { useGetUserInfo } from '../hooks/Client_releted/useGetUserInfo';
 
 const ProfileStrenght = () => {
 
     const {
-        data: clientData = {},
+        data: UserData = {},
         isLoading,
         error: clientError,
         isError,
         refetch,
-
-    } = useGetClientInfo();
+    } = useGetUserInfo();
 
     const {
         firstName = "",
@@ -27,7 +26,7 @@ const ProfileStrenght = () => {
         freelanerSkills = [],
         languages = [],
         Links = {},
-        ProfessionalSummary = "",
+        freelancerSummary = "",
         profileImage = {},
         rate = "",
         hourlyRate = "",
@@ -43,16 +42,13 @@ const ProfileStrenght = () => {
         clientSummary = "",
         company = {},
         hiringCategories=[],
-
-
-    } = clientData.user || {};
-
+    } = UserData.user || {};
 
 
     const profilestrengthData = {
-        // "Profile photo": Object.keys(profileImage).length > 0 ? true : false ? true : false,
-        "Professional summary": ProfessionalSummary ? true : false,
-        "Links": Links.length > 0 ? true : false,
+        "Profile photo": Object.keys(profileImage).length > 0 ? true : false ? true : false,
+        "Professional summary": freelancerSummary ? true : false,
+        "Links": Object.keys(Links).length > 0 ? true : false,
         "Work experience": workExperience.length > 0 ? true : false,
         "Education": education.length > 0 ? true : false,
         //  "Certifications": false,

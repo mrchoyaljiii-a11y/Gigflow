@@ -21,7 +21,7 @@ import {
   FaRegBookmark,
   FaDollarSign,
   FaUser,
-  FaBookmark 
+  FaBookmark
 } from "react-icons/fa";
 
 import {
@@ -58,13 +58,14 @@ const Job_section = () => {
   // console.log("JobList in Job_section:", jobList);
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 m-1 mb-20 ">
+    <div
+      className={`grid grid-cols-1 xl:grid-cols-2 gap-6 m-1 mb-20`}
+    >
 
       {/* job card */}
       {
         jobList && jobList.map((job) => {
-          const { _id, clientId: { company, country, email, firstName, lastName, profileImage, state }, experiance, jobtitle, Budget, BudgetType,projectCategory, price, skills, jobDescription, status, timeline, createdAt } = job;
-
+          const { _id, clientId: { company, country, email, firstName, lastName, profileImage, state }, experiance, jobtitle, Budget, BudgetType, projectCategory, price, skills, jobDescription, status, timeline, createdAt } = job;
 
           // console.log("clientId:", clientId);
           // const formattedMinBudget = minBudget.toLocaleString();
@@ -73,7 +74,13 @@ const Job_section = () => {
 
           return (
 
-            <div className="group relative bg-white rounded-2xl border border-slate-200 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_8px_32px_rgba(79,107,255,0.12)] overflow-hidden mt-2">
+            <div
+              className={`group relative bg-white rounded-2xl border border-slate-200 p-6 transition-all duration-300 hover:-translate-y-1 hover:border-blue-300 hover:shadow-[0_8px_32px_rgba(79,107,255,0.12)] overflow-hidden mt-2 ${jobList.length === 1
+                  ? "xl:col-span-2 xl:w-1/2 xl:justify-self-center"
+                  : ""
+                }`}
+            >
+
 
               {/* Top accent bar on hover */}
               <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-blue-500 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-2xl" />
@@ -128,10 +135,10 @@ const Job_section = () => {
                         </span>
 
                         <span className={`${status === "active"
-                            ? "bg-green-100 text-green-700"
-                            : status === "assigned"
-                              ? "bg-amber-100 text-amber-700"
-                              : "bg-red-100 text-red-700"} py-0.5 px-2 rounded-full text-[0.8rem] font-bold uppercase tracking-wider`}>
+                          ? "bg-green-100 text-green-700"
+                          : status === "assigned"
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-red-100 text-red-700"} py-0.5 px-2 rounded-full text-[0.8rem] font-bold uppercase tracking-wider`}>
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </span>
 
@@ -141,7 +148,7 @@ const Job_section = () => {
 
                     {/* Rating + Save */}
                     <div className="flex items-center gap-2 shrink-0">
-                     
+
                       <span className="inline-flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-bold px-2.5 py-1 rounded-full">
                         <FaStar size={10} className="text-amber-400" />
                         4.9
@@ -272,7 +279,7 @@ const Job_section = () => {
 
       {/* Pagination */}
       <div className="col-span-1 xl:col-span-2 flex justify-center">
-        <Pagination totalPages={playLoad?.totalPages} page={page} setPage={setPage}/>
+        <Pagination totalPages={playLoad?.totalPages} page={page} setPage={setPage} />
       </div>
 
     </div>

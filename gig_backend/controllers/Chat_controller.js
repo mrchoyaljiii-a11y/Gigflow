@@ -3,7 +3,6 @@ const messageModel = require("../model/MessageModel/Message");
 const uploadToCloudinary = require("../utility/uploadToCloudinary");
 const cloudinary = require('../connections/cloudinary');
 
-
 const { getIO } = require("../Socket/socket");
 
 async function Handle_Submit_Chat_message(req, res) {
@@ -146,6 +145,7 @@ async function Handle_Submit_Chat_message(req, res) {
         });
 
         const io = getIO();
+        
         io.to(`contract:${contractId}`).emit("newMessage", newMessage);
 
         return res.status(201).json({
@@ -162,6 +162,7 @@ async function Handle_Submit_Chat_message(req, res) {
         });
     }
 }
+
 
 async function Handle_Get_Chat_messages(req, res) {
 

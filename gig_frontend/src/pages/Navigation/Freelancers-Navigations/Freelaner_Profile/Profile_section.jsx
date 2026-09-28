@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
-import axios from "axios";
+import EditProfileModal from '../../../../components/client_releted/EditProfileModal.jsx';
 
 // importing slice action
 import {
@@ -24,7 +24,7 @@ import {
 
 import {
     FaStar, FaLinkedin, FaGithub, FaGlobe,
-    FaMapMarkerAlt, FaArrowUp, FaBolt, FaRegUser
+    FaMapMarkerAlt, FaArrowUp, FaBolt, FaRegUser, FaPencilAlt
 } from "react-icons/fa";
 
 import { MdVerified, MdOutlineCalendarMonth, MdOutlineEmail } from "react-icons/md";
@@ -35,6 +35,7 @@ import { LuBriefcase } from "react-icons/lu";
 import { HiOutlineIdentification, HiOutlineBriefcase, HiOutlineCode } from "react-icons/hi";
 import { IoIosRocket } from "react-icons/io";
 import { registerUser } from "../../../../redux/Auth/Auth.js";
+import { useGetUserInfo } from "../../../../hooks/Client_releted/useGetUserInfo.js";
 
 
 // portfolio modal
@@ -1434,9 +1435,12 @@ const AddExtra_info = ({ actionType, setOpenExtraInfoModel }) => {
     }
 }
 
-
 // main component
 const Profile_section = () => {
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editSection, setEditSection] = useState(null);
+
     const [actionType, setActionType] = useState("");
 
     const [openMenuId, setOpenMenuId] = useState(null);
@@ -1445,9 +1449,22 @@ const Profile_section = () => {
 
     const [openExtraInfoModel, setOpenExtraInfoModel] = useState(false);
 
-    const { userData, loading, error } = useSelector(
-        (state) => state.userSlice
-    );
+    const handleEdit = (section) => {
+        setEditSection(section);
+        setIsModalOpen(true);
+    };
+
+    const {
+        data: FreelancerData = {},
+        isLoading,
+        error,
+        isError,
+        refetch,
+    } = useGetUserInfo();
+
+    // const { userData, loading, error } = useSelector(
+    //     (state) => state.userSlice
+    // );
 
     const {
         firstName = "",
@@ -1460,7 +1477,7 @@ const Profile_section = () => {
         freelanerSkills = [],
         languages = [],
         Links = {},
-        ProfessionalSummary = "",
+        freelancerSummary = "",
         profileImage = {},
         rate = "",
         hourlyRate = "",
@@ -1470,10 +1487,9 @@ const Profile_section = () => {
         userName = "",
         professionalCategory = "",
         portfolioProjects = [],
-    } = userData || {};
+    } = FreelancerData.user || {};
 
-    console.log("userData", userData);
-
+    console.log("FreelancerData", FreelancerData);
 
     const displayRate = hourlyRate ?? rate
 
@@ -1496,10 +1512,11 @@ const Profile_section = () => {
     const [showFullSummary, setShowFullSummary] = useState(false)
 
     const SUMMARY_LIMIT = 300  // chars shown when collapsed
-    const summaryIsTruncatable = ProfessionalSummary && ProfessionalSummary.length > SUMMARY_LIMIT
+    const summaryIsTruncatable = freelancerSummary && freelancerSummary.length > SUMMARY_LIMIT
+
     const visibleSummary = showFullSummary || !summaryIsTruncatable
-        ? ProfessionalSummary
-        : ProfessionalSummary.slice(0, SUMMARY_LIMIT).trimEnd() + '...'
+        ? freelancerSummary
+        : freelancerSummary.slice(0, SUMMARY_LIMIT).trimEnd() + '...'
 
     const stats = [
         {
@@ -1594,29 +1611,51 @@ const Profile_section = () => {
     ];
 
     /* Loading */
-    if (loading) {
+    if (isLoading) {
         return <div className="text-center py-20">Loading profile...</div>;
     }
 
     /* Error */
-    if (error) {
+    if (isError) {
         return (
             <div className="text-center py-20 text-red-500">
-                {error}
+                {error.message || "An error occurred while fetching freelancer data."}
             </div>
         );
     }
 
     /* No Data */
-    if (!userData) {
+    if (!FreelancerData) {
         return (
             <div className="text-center py-20 text-gray-500">
-                No user data found
+                No freelancer data found
             </div>
         );
     }
     return (
         <>
+
+            {
+                isModalOpen && (
+                    <EditProfileModal
+                        isOpen={isModalOpen}
+                        section={editSection}
+                        freelancerData={
+                            {
+                                freelancerSummary,
+                                languages,
+                                freelanerSkills,
+                                Links,
+                            }
+                        }
+                        role="freelancer"
+                        onClose={() => setIsModalOpen(false)}
+                        refetch={refetch}
+                    />
+                )
+
+            }
+
             {
                 openPortfolioModel ? (<AddPortfolioProject setOpenPortfolioModel={setOpenPortfolioModel} />) : (
                     openExtraInfoModel ? (<AddExtra_info actionType={actionType} setOpenExtraInfoModel={setOpenExtraInfoModel} />) : (
@@ -1705,13 +1744,13 @@ const Profile_section = () => {
 
                                                 {/* Top Buttons */}
                                                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-
+                                                    {/* 
                                                     <button className="inline-flex items-center justify-center gap-2 px-4 py-2 text-white text-sm sm:text-base font-bold rounded-xl transition-all shadow-sm border border-white cursor-pointer hover:bg-blue-700">
 
                                                         <FiEdit2 size={18} />
 
                                                         <span>Edit Profile</span>
-                                                    </button>
+                                                    </button> */}
 
                                                     <button className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white hover:bg-white/90 border border-white/30 text-blue-700 text-sm sm:text-base font-bold rounded-xl transition-all backdrop-blur-sm cursor-pointer shadow-sm">
 
@@ -1799,12 +1838,25 @@ const Profile_section = () => {
 
                                     {/* Professional Summary */}
                                     <section className="bg-white rounded-xl border border-[#e2e8f0] p-8 w-full">
-                                        <h3 className="text-xl font-extrabold text-[#0f172a] mb-6 flex items-center gap-2 ">
-                                            <span className="bg-blue-50 w-10 h-10 text-center rounded-xl flex items-center justify-center"> <FaRegUser className="text-primary" /></span>  Professional Summary
-                                        </h3>
+                                        <div className="flex items-center justify-between">
+
+                                            <h3 className="text-xl font-extrabold text-[#0f172a]  flex items-center gap-2 ">
+                                                <span className="bg-blue-50 w-10 h-10 text-center rounded-xl flex items-center justify-center"> <FaRegUser className="text-primary" /></span>  Professional Summary
+                                            </h3>
+
+
+                                            <button className="flex items-center gap-1 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors cursor-pointer"
+                                                onClick={() => handleEdit("ProfessionalSummary")}
+                                            >
+                                                <FaPencilAlt size={14} />
+                                                Edit
+                                            </button>
+
+                                        </div>
                                         <div className="text-[#475569] leading-relaxed whitespace-pre-line">
                                             {visibleSummary}
                                         </div>
+
                                         {summaryIsTruncatable && (
                                             <button
                                                 type="button"
@@ -1832,9 +1884,19 @@ const Profile_section = () => {
                                                     <FiCode size={18} />
                                                 </div>
 
-                                                <h2 className="text-xl font-bold text-slate-800">
-                                                    Skills
-                                                </h2>
+                                                <div className="flex items-center justify-between w-full">
+
+                                                    <h2 className="text-xl font-bold text-slate-800">
+                                                        Skills
+                                                    </h2>
+
+                                                    <button className="flex items-center gap-1 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors cursor-pointer"
+                                                        onClick={() => handleEdit("freelanerSkills")}
+                                                    >
+                                                        <FaPencilAlt size={14} />
+                                                        Edit
+                                                    </button>
+                                                </div>
                                             </div>
 
                                             {/* skills */}
@@ -1869,6 +1931,12 @@ const Profile_section = () => {
                                                 <h2 className="text-xl font-bold text-slate-800">
                                                     Languages
                                                 </h2>
+                                                <button className="flex items-center gap-1 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors cursor-pointer"
+                                                    onClick={() => handleEdit("freelancerLanguages")}
+                                                >
+                                                    <FaPencilAlt size={14} />
+                                                    Edit
+                                                </button>
                                             </div>
 
                                             {/* language list */}
@@ -1900,14 +1968,25 @@ const Profile_section = () => {
                                         <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all">
 
                                             {/* heading */}
-                                            <div className="flex items-center gap-3 mb-6">
-                                                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
-                                                    <FiExternalLink size={18} />
+                                            <div className="flex justify-between items-center gap-3 mb-6">
+
+                                                <div className="flex items-center gap-3 ">
+                                                    <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                                                        <FiExternalLink size={18} />
+                                                    </div>
+
+                                                    <h2 className="text-xl font-bold text-slate-800">
+                                                        Links
+                                                    </h2>
+
                                                 </div>
 
-                                                <h2 className="text-xl font-bold text-slate-800">
-                                                    Links
-                                                </h2>
+                                                <button className="flex items-center gap-1 text-sm font-semibold text-blue-500 hover:text-blue-600 transition-colors cursor-pointer"
+                                                    onClick={() => handleEdit("links")}
+                                                >
+                                                    <FaPencilAlt size={14} />
+                                                    Edit
+                                                </button>
                                             </div>
 
                                             {/* Link list */}
@@ -1943,16 +2022,6 @@ const Profile_section = () => {
                                                                         {label} is not added yet!
                                                                     </p>
 
-                                                                    <button
-                                                                        className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition-all cursor-pointer"
-                                                                        onClick={() => {
-                                                                            setActionType("AddLinks");
-                                                                            setOpenExtraInfoModel(true);
-                                                                        }}
-                                                                    >
-                                                                        <FiPlus size={18} />
-                                                                        Add Links
-                                                                    </button>
                                                                 </div>
                                                             )}
                                                         </div>

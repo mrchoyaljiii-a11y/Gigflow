@@ -1,6 +1,6 @@
 const express = require("express");
 const client_router = express.Router();
-const { updateClientProfile } = require("../../controllers/client_releted_controller");
+const { updateUserProfile } = require("../../controllers/client_releted_controller");
 const authMiddleware = require("../../middlewares/authMiddleware");
 
 const multer = require("multer");
@@ -38,6 +38,6 @@ const upload = multer({
 //router to update the client profile information
 client_router.put("/api/client/profile", authMiddleware, upload.single(
     "profileImage"
-), updateClientProfile);
+), updateUserProfile);
 
 module.exports = client_router;

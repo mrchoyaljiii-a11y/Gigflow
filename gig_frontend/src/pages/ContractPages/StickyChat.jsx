@@ -941,11 +941,8 @@ const StickyChat = ({ mobile = false, freelancerData, clientData, UserRole, cont
                                           alt={file.originalName}
                                           className="max-h-80 w-full object-cover transition hover:scale-[1.01]"
                                         />
-
-
                                       </div>
                                     )}
-
 
                                     {isPDF && (
                                       <div className="overflow-hidden bg-blue-700 min-w-80 flex flex-col ">
@@ -974,8 +971,6 @@ const StickyChat = ({ mobile = false, freelancerData, clientData, UserRole, cont
                                           </div>
 
                                         </div>
-
-
 
                                       </div>
                                     )}

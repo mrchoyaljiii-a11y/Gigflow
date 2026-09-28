@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const { create, removeAllListeners } = require('../freelancer/Hired');
 const Schema = mongoose.Schema;
 
 const MilestoneSchema = new Schema({

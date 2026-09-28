@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { useGetClientInfo } from '../../../../hooks/Client_releted/useGetClientInfo';
+import { useGetUserInfo } from '../../../../hooks/Client_releted/useGetUserInfo';
 import { useGetJobs } from '../../../../hooks/job_releted/useGetJobs';
 import { useGetHired } from '../../../../hooks/Hired_records_releted/useGetHired';
 import ProfileStrenght from '../../../../components/ProfileStrenght';
@@ -72,7 +72,7 @@ const Client_MYprofile = () => {
     isError,
     refetch,
 
-  } = useGetClientInfo();
+  } = useGetUserInfo();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -149,6 +149,7 @@ const Client_MYprofile = () => {
             isOpen={isModalOpen}
             section={editSection}
             clientData={clientData.user}
+            role = "client"
             onClose={() => setIsModalOpen(false)}
             refetch={refetch}
           />
@@ -203,7 +204,7 @@ const Client_MYprofile = () => {
 
                 <button className="w-8 h-8 absolute bottom-0 right-2 lg:right-4 lg:top-30 cursor-pointer bg-white text-blue-500 rounded-full p-2 shadow-md hover:bg-blue-50 transition-colors content-center"
 
-               onClick={() => handleEdit("profileImage")}
+                  onClick={() => handleEdit("profileImage")}
                 >
                   <FiUpload />
                 </button>
